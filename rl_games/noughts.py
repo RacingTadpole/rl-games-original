@@ -227,7 +227,6 @@ def play_many(
     (0.328, 0.269)
 
     Two experienced players come to a draw, with exploration turned off
-    TODO: How robust is this (eg. try other seeds)
     >>> x.explore_chance = 0
     >>> o.explore_chance = 0
     >>> play_once(x, o, verbose=True)
@@ -240,17 +239,15 @@ def play_many(
     (('X', 'O', 'O'), (None, 'X', 'X'), (None, 'X', 'O'))
     (('X', 'O', 'O'), ('O', 'X', 'X'), (None, 'X', 'O'))
     (('X', 'O', 'O'), ('O', 'X', 'X'), ('X', 'X', 'O'))
+    >>> play_many(x, o)
+    (0.166, 0.09)
 
     An experienced player against a novice should win
-    TODO: How robust is this (eg. try other seeds)
     >>> random.seed(2)
-    >>> play_once(x, Player(), verbose=True)
-    ((None, None, None), (None, None, None), (None, 'X', None))
-    (('O', None, None), (None, None, None), (None, 'X', None))
-    (('O', 'X', None), (None, None, None), (None, 'X', None))
-    (('O', 'X', None), (None, None, 'O'), (None, 'X', None))
-    (('O', 'X', None), (None, 'X', 'O'), (None, 'X', None))
-    'X'
+    >>> play_many(x, Player())
+    (0.288, 0.112)
+    >>> play_many(x, Player())
+    (0.207, 0.01)
     """
     count = {'X': 0, 'O': 0}
     for _ in range(num_rounds):
