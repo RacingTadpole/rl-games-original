@@ -239,6 +239,7 @@ def play_many(
     (('O', None, None), (None, None, None), (None, 'X', None))
     (('O', 'X', None), (None, None, None), (None, 'X', None))
     (('O', 'X', None), (None, None, 'O'), (None, 'X', None))
-    (('O', 'X', None), (None, 'X', 'O'), (None, 'X', None))    """
+    (('O', 'X', None), (None, 'X', 'O'), (None, 'X', None))
+    """
     for _ in range(num_rounds):
         play_once(player_x, player_o)
