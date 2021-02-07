@@ -73,11 +73,14 @@ def choose_action(
         # Greedy action - choose action with greatest expected value
         # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
         random.shuffle(actions)
-        expected_rewards = tuple((player.value.get(
-                                    get_updated_board(board, action, marker), player.base_value
-                                ), action)
-                                for action in actions)
-        return max(expected_rewards)[1]
+        max_reward = -1
+        best_action = actions[0]
+        for action in actions:
+            expected_reward = player.value.get(get_updated_board(board, action, marker), player.base_value)
+            if expected_reward > max_reward:
+                max_reward = expected_reward
+                best_action = action
+        return best_action
 
 def get_init_board() -> Board:
     """
@@ -161,20 +164,22 @@ def play_once(
     verbose = False
 ) -> None:
     """
-    >>> random.seed(3)
+    >>> random.seed(1)
     >>> x, o = Player(), Player()
     >>> player_value = play_once(x, o)
     >>> for k, v in x.value.items():
     ...         print(f'X: {k}: {v}')
-    X: ((None, None, 'X'), ('O', 'X', 'O'), ('X', 'O', 'X')): 1
-    X: ((None, None, None), (None, 'X', 'O'), ('X', 'O', 'X')): 0.1
-    X: ((None, None, None), (None, None, None), ('X', 'O', 'X')): 0.01
-    X: ((None, None, None), (None, None, None), (None, None, 'X')): 0.001
+    X: (('O', 'X', 'X'), ('O', 'X', 'O'), ('X', 'X', 'O')): 1
+    X: ((None, 'X', 'X'), ('O', None, 'O'), ('X', 'X', 'O')): 0.1
+    X: ((None, None, 'X'), (None, None, 'O'), ('X', 'X', 'O')): 0.01
+    X: ((None, None, None), (None, None, None), ('X', 'X', 'O')): 0.001
+    X: ((None, None, None), (None, None, None), ('X', None, None)): 0.0001
     >>> for k, v in o.value.items():
     ...         print(f'O: {k}: {v}')
-    O: ((None, None, None), ('O', 'X', 'O'), ('X', 'O', 'X')): -0.1
-    O: ((None, None, None), (None, None, 'O'), ('X', 'O', 'X')): -0.01
-    O: ((None, None, None), (None, None, None), (None, 'O', 'X')): -0.001
+    O: (('O', 'X', 'X'), ('O', None, 'O'), ('X', 'X', 'O')): -0.1
+    O: ((None, None, 'X'), ('O', None, 'O'), ('X', 'X', 'O')): -0.01
+    O: ((None, None, None), (None, None, 'O'), ('X', 'X', 'O')): -0.001
+    O: ((None, None, None), (None, None, None), ('X', None, 'O')): -0.0001
     """
     board = get_init_board()
     history: Dict[Marker, List[Board]] = {'X': [], 'O': []}
@@ -207,19 +212,33 @@ def play_many(
     num_rounds = 1000,
 ) -> None:
     """
-    >>> random.seed(3)
+    >>> random.seed(2)
     >>> x, o = Player(), Player()
     >>> play_many(x, o)
+
+    Two experienced players come to a draw, with exploration turned off
+    TODO: How robust is this (eg. try other seeds)
+    >>> x.explore_chance = 0
+    >>> o.explore_chance = 0
     >>> play_once(x, o, verbose=True)
-    ((None, None, None), (None, None, None), (None, None, 'X'))
-    ((None, None, None), (None, 'O', None), (None, None, 'X'))
-    ((None, None, 'X'), (None, 'O', None), (None, None, 'X'))
-    ((None, None, 'X'), (None, 'O', 'O'), (None, None, 'X'))
-    ((None, None, 'X'), ('X', 'O', 'O'), (None, None, 'X'))
-    ((None, None, 'X'), ('X', 'O', 'O'), ('O', None, 'X'))
-    ((None, None, 'X'), ('X', 'O', 'O'), ('O', 'X', 'X'))
-    ((None, 'O', 'X'), ('X', 'O', 'O'), ('O', 'X', 'X'))
-    (('X', 'O', 'X'), ('X', 'O', 'O'), ('O', 'X', 'X'))
-    """
+    ((None, None, None), (None, None, None), (None, 'X', None))
+    ((None, None, 'O'), (None, None, None), (None, 'X', None))
+    ((None, None, 'O'), (None, 'X', None), (None, 'X', None))
+    ((None, 'O', 'O'), (None, 'X', None), (None, 'X', None))
+    (('X', 'O', 'O'), (None, 'X', None), (None, 'X', None))
+    (('X', 'O', 'O'), (None, 'X', None), (None, 'X', 'O'))
+    (('X', 'O', 'O'), (None, 'X', 'X'), (None, 'X', 'O'))
+    (('X', 'O', 'O'), ('O', 'X', 'X'), (None, 'X', 'O'))
+    (('X', 'O', 'O'), ('O', 'X', 'X'), ('X', 'X', 'O'))
+
+    An experienced player against a novice should win
+    TODO: How robust is this (eg. try other seeds)
+    >>> random.seed(2)
+    >>> play_once(x, Player(), verbose=True)
+    ((None, None, None), (None, None, None), (None, 'X', None))
+    (('O', None, None), (None, None, None), (None, 'X', None))
+    (('O', 'X', None), (None, None, None), (None, 'X', None))
+    (('O', 'X', None), (None, None, 'O'), (None, 'X', None))
+    (('O', 'X', None), (None, 'X', 'O'), (None, 'X', None))    """
     for _ in range(num_rounds):
         play_once(player_x, player_o)
