@@ -162,11 +162,13 @@ def play_once(
     player_x: Player,
     player_o: Player,
     verbose = False
-) -> None:
+) -> Optional[Marker]:
     """
+    Returns the winner's marker, if any.
     >>> random.seed(1)
     >>> x, o = Player(), Player()
-    >>> player_value = play_once(x, o)
+    >>> play_once(x, o)
+    'X'
     >>> for k, v in x.value.items():
     ...         print(f'X: {k}: {v}')
     X: (('O', 'X', 'X'), ('O', 'X', 'O'), ('X', 'X', 'O')): 1
@@ -206,15 +208,23 @@ def play_once(
     other = get_other_marker(marker)
     update_values(history[other], players[other], -score)
 
+    if score > 0:
+        return marker
+    if score < 0:
+        return other
+    return None
+
 def play_many(
     player_x: Player,
     player_o: Player,
     num_rounds = 1000,
-) -> None:
+) -> Tuple[float, float]:
     """
+    Returns the fraction won by player x and o.
     >>> random.seed(2)
     >>> x, o = Player(), Player()
     >>> play_many(x, o)
+    (0.328, 0.269)
 
     Two experienced players come to a draw, with exploration turned off
     TODO: How robust is this (eg. try other seeds)
@@ -240,6 +250,11 @@ def play_many(
     (('O', 'X', None), (None, None, None), (None, 'X', None))
     (('O', 'X', None), (None, None, 'O'), (None, 'X', None))
     (('O', 'X', None), (None, 'X', 'O'), (None, 'X', None))
+    'X'
     """
+    count = {'X': 0, 'O': 0}
     for _ in range(num_rounds):
-        play_once(player_x, player_o)
+        winner = play_once(player_x, player_o)
+        if winner:
+            count[winner] += 1
+    return count['X'] / num_rounds, count['O'] / num_rounds
