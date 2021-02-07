@@ -226,7 +226,7 @@ def play_many(
     >>> play_many(x, o)
     (0.328, 0.269)
 
-    Two experienced players come to a draw, with exploration turned off
+    Two experienced players usually come to a draw, with exploration turned off
     >>> x.explore_chance = 0
     >>> o.explore_chance = 0
     >>> play_once(x, o, verbose=True)
@@ -248,6 +248,15 @@ def play_many(
     (0.288, 0.112)
     >>> play_many(x, Player())
     (0.207, 0.01)
+
+    Similarly for the player playing O, although this takes more training
+    >>> random.seed(2)
+    >>> o.explore_chance = 0.1
+    >>> play_many(Player(explore_chance=0.5), o)
+    (0.363, 0.43)
+    >>> o.explore_chance = 0
+    >>> play_many(Player(), o, 100)
+    (0.17, 0.44)
     """
     count = {'X': 0, 'O': 0}
     for _ in range(num_rounds):
