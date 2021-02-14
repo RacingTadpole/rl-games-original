@@ -1,12 +1,13 @@
-# Reinforcement Learning
+# pylint: disable=unsubscriptable-object
+
 # Noughts and crosses
+# The game and player definitions.
 
 import random
 from dataclasses import dataclass, field
 from typing import Tuple, Literal, Optional, Iterator, Dict, List, cast
 from copy import deepcopy
 
-# pylint: disable=unsubscriptable-object
 Marker = Literal['X', 'O']
 Square = Optional[Marker]
 
@@ -158,33 +159,20 @@ def update_values(
         reward = prior + player.learning_rate * (reward - prior)
         player.value[state] = round(reward, 5)
 
-def play_once(
+def play_once_no_training(
     player_x: Player,
     player_o: Player,
     verbose = False
 ) -> Optional[Marker]:
     """
     Returns the winner's marker, if any.
+    No training.
     >>> random.seed(1)
     >>> x, o = Player(), Player()
-    >>> play_once(x, o)
-    'X'
-    >>> for k, v in x.value.items():
-    ...         print(f'X: {k}: {v}')
-    X: (('O', 'X', 'X'), ('O', 'X', 'O'), ('X', 'X', 'O')): 1
-    X: ((None, 'X', 'X'), ('O', None, 'O'), ('X', 'X', 'O')): 0.1
-    X: ((None, None, 'X'), (None, None, 'O'), ('X', 'X', 'O')): 0.01
-    X: ((None, None, None), (None, None, None), ('X', 'X', 'O')): 0.001
-    X: ((None, None, None), (None, None, None), ('X', None, None)): 0.0001
-    >>> for k, v in o.value.items():
-    ...         print(f'O: {k}: {v}')
-    O: (('O', 'X', 'X'), ('O', None, 'O'), ('X', 'X', 'O')): -0.1
-    O: ((None, None, 'X'), ('O', None, 'O'), ('X', 'X', 'O')): -0.01
-    O: ((None, None, None), (None, None, 'O'), ('X', 'X', 'O')): -0.001
-    O: ((None, None, None), (None, None, None), ('X', None, 'O')): -0.0001
+    >>> [play_once_no_training(x, o) for _ in range(5)]
+    ['X', 'O', None, 'X', 'X']
     """
     board = get_init_board()
-    history: Dict[Marker, List[Board]] = {'X': [], 'O': []}
     players = {'X': player_x, 'O': player_o}
     score = 0
     game_over = False
@@ -195,68 +183,30 @@ def play_once(
             board = get_updated_board(board, action, marker)
             if verbose:
                 print(board)
-            history[marker].append(board)
             game_over, score = is_game_over(board, marker)
             if game_over:
                 break
 
     marker = cast(Marker, marker)
-    # Override the learning rate on the final board reward - just set it to the score. (Optional.)
-    player.value[board] = score
-    update_values(history[marker][:-1], player, score)
-
-    other = get_other_marker(marker)
-    update_values(history[other], players[other], -score)
-
     if score > 0:
         return marker
     if score < 0:
-        return other
+        return get_other_marker(marker)
     return None
 
 def play_many(
     player_x: Player,
     player_o: Player,
     num_rounds = 1000,
+    play_once = play_once_no_training,
 ) -> Tuple[float, float]:
     """
     Returns the fraction won by player x and o.
+    These are untrained players.
     >>> random.seed(2)
     >>> x, o = Player(), Player()
     >>> play_many(x, o)
-    (0.328, 0.269)
-
-    Two experienced players usually come to a draw, with exploration turned off
-    >>> x.explore_chance = 0
-    >>> o.explore_chance = 0
-    >>> play_once(x, o, verbose=True)
-    ((None, None, None), (None, None, None), (None, 'X', None))
-    ((None, None, 'O'), (None, None, None), (None, 'X', None))
-    ((None, None, 'O'), (None, 'X', None), (None, 'X', None))
-    ((None, 'O', 'O'), (None, 'X', None), (None, 'X', None))
-    (('X', 'O', 'O'), (None, 'X', None), (None, 'X', None))
-    (('X', 'O', 'O'), (None, 'X', None), (None, 'X', 'O'))
-    (('X', 'O', 'O'), (None, 'X', 'X'), (None, 'X', 'O'))
-    (('X', 'O', 'O'), ('O', 'X', 'X'), (None, 'X', 'O'))
-    (('X', 'O', 'O'), ('O', 'X', 'X'), ('X', 'X', 'O'))
-    >>> play_many(x, o)
-    (0.166, 0.09)
-
-    An experienced player against a novice should win
-    >>> random.seed(2)
-    >>> play_many(x, Player())
-    (0.288, 0.112)
-    >>> play_many(x, Player())
-    (0.207, 0.01)
-
-    Similarly for the player playing O, although this takes more training
-    >>> random.seed(2)
-    >>> o.explore_chance = 0.1
-    >>> play_many(Player(explore_chance=0.5), o)
-    (0.363, 0.43)
-    >>> o.explore_chance = 0
-    >>> play_many(Player(), o, 100)
-    (0.17, 0.44)
+    (0.618, 0.264)
     """
     count = {'X': 0, 'O': 0}
     for _ in range(num_rounds):
