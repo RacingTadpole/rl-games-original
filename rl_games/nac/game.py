@@ -5,7 +5,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, cast
+from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast
 from copy import deepcopy
 
 Marker = Literal['X', 'O']
@@ -16,32 +16,68 @@ size = 3
 Row = Tuple[Square, Square, Square]
 Board = Tuple[Row, Row, Row]
 
-Action = Tuple[Literal[0, 1, 2], Literal[0, 1, 2]]
+Action = Tuple[Literal[0, 1, 2], Literal[0, 1, 2], Marker]
+
+def get_actions(board: Board, marker: Marker) -> Iterator[Action]:
+    """
+    >>> list(get_actions((('X', None, 'O'), ('X', 'O', 'O'), (None, None, 'X')), 'X'))
+    [(0, 1, 'X'), (2, 0, 'X'), (2, 1, 'X')]
+    >>> list(get_actions((('X', 'X', 'O'), ('X', 'O', 'O'), (None, None, 'X')), 'X'))
+    []
+    """
+    if marker in get_valid_next_markers(board):
+        for r in range(size):
+            for c in range(size):
+                if board[r][c] is None:
+                    yield cast(Action, (r, c, marker))
 
 @dataclass
 class Player:
-    value: Dict[Board, float] = field(default_factory=dict)
     learning_rate: float = 0.1
     explore_chance: float = 0.1
     base_value: float = 0
 
+    def value(self, board: Board, marker: Marker) -> float:
+        # Subclass Player to improve this.
+        return self.base_value
 
-def get_actions(board: Board) -> Iterator[Action]:
-    """
-    >>> list(get_actions((('X', None, 'O'), ('X', 'O', 'O'), (None, None, 'X'))))
-    [(0, 1), (2, 0), (2, 1)]
-    """
-    for r in range(size):
-        for c in range(size):
-            if board[r][c] is None:
-                yield cast(Action, (r, c))
+    def choose_action(self, board: Board, marker: Marker) -> Action:
+        """
+        >>> board = (('X', 'X', 'O'), ('X', 'O', 'O'), (None, None, 'X'))
+        >>> winning_board = (('X', 'X', 'O'), ('X', 'O', 'O'), ('O', None, 'X'))
+        >>> value = { winning_board: 0.5 }
+        >>> @dataclass
+        ... class DummyPlayer(Player):
+        ...     def value(self, board: Board, marker: Marker) -> float:
+        ...         return value.get(board, self.base_value)
+        >>> player = DummyPlayer(explore_chance=0)
+        >>> player.choose_action(board, 'O')
+        (2, 0, 'O')
+        """
+        actions = list(get_actions(board, marker))
+        if random.uniform(0, 1) <= self.explore_chance:
+            # Explore
+            return random.choice(actions)
+        else:
+            # Greedy action - choose action with greatest expected value
+            # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
+            random.shuffle(actions)
+            max_reward = -1
+            best_action = actions[0]
+            for action in actions:
+                expected_reward = self.value(get_updated_board(board, action), marker)
+                if expected_reward > max_reward:
+                    max_reward = expected_reward
+                    best_action = action
+            return best_action
 
-def get_updated_board(board: Board, action: Action, marker: Marker) -> Board:
+
+def get_valid_next_markers(board: Board) -> Sequence[Marker]:
     """
-    >>> get_updated_board(get_init_board(), (2, 1), 'O')
-    ((None, None, None), (None, None, None), (None, 'O', None))
-    >>> get_updated_board((('X', None, 'O'), ('X', 'O', 'O'), (None, None, 'X')), (0, 1), 'X')
-    (('X', 'X', 'O'), ('X', 'O', 'O'), (None, None, 'X'))
+    >>> get_valid_next_markers(((None, None, None), (None, None, None), (None, 'O', None)))
+    ('X',)
+    >>> get_valid_next_markers((('X', None, 'O'), ('X', 'O', 'O'), (None, None, 'X')))
+    ('X', 'O')
     """
     count = {'X': 0, 'O': 0}
     for r in range(size):
@@ -49,39 +85,23 @@ def get_updated_board(board: Board, action: Action, marker: Marker) -> Board:
             contents = board[r][c]
             if contents is not None:
                 count[contents] += 1
+    if count['X'] > count['O']:
+        return ('O',)
+    if count['X'] < count['O']:
+        return ('X',)
+    return ('X', 'O')
+
+def get_updated_board(board: Board, action: Action) -> Board:
+    """
+    >>> get_updated_board(get_init_board(), (2, 1, 'O'))
+    ((None, None, None), (None, None, None), (None, 'O', None))
+    >>> get_updated_board((('X', None, 'O'), ('X', 'O', 'O'), (None, None, 'X')), (0, 1, 'X'))
+    (('X', 'X', 'O'), ('X', 'O', 'O'), (None, None, 'X'))
+    """
     new_board = [list(row) for row in board]
+    marker = action[-1]
     new_board[action[0]][action[1]] = marker
     return cast(Board, tuple(tuple(row) for row in new_board))
-
-def choose_action(
-    board: Board,
-    player: Player,
-    marker: Marker,
-):
-    """
-    >>> board = (('X', 'X', 'O'), ('X', 'O', 'O'), (None, None, 'X'))
-    >>> winning_board = (('X', 'X', 'O'), ('X', 'O', 'O'), ('O', None, 'X'))
-    >>> value = { winning_board: 0.5 }
-    >>> player = Player(value=value, explore_chance=0)
-    >>> choose_action(board, player, 'O')
-    (2, 0)
-    """
-    actions = list(get_actions(board))
-    if random.uniform(0, 1) <= player.explore_chance:
-        # Explore
-        return random.choice(actions)
-    else:
-        # Greedy action - choose action with greatest expected value
-        # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-        random.shuffle(actions)
-        max_reward = -1
-        best_action = actions[0]
-        for action in actions:
-            expected_reward = player.value.get(get_updated_board(board, action, marker), player.base_value)
-            if expected_reward > max_reward:
-                max_reward = expected_reward
-                best_action = action
-        return best_action
 
 def get_init_board() -> Board:
     """
@@ -129,36 +149,6 @@ def is_game_over(board: Board, marker: Marker) -> Tuple[bool, int]:
         return True, -1
     return all(cell for row in board for cell in row), 0
 
-def update_values(
-    states: List[Board],
-    player: Player,
-    final_reward: float,
-) -> None:
-    """
-    Boards are only added to state after your turn, so for 'X',
-    don't see 'O' moves.
-
-    >>> states = [
-    ...     (('X', None, None), (None, None, None), (None, None, None)),
-    ...     (('X', None, None), (None, 'O', None), (None, None, 'X')),
-    ...     (('X', None, 'O'), (None, 'O', None), (None, None, 'X')),
-    ...     (('X', None, 'O'), ('O', 'O', None), ('X', None, 'X')),
-    ... ]
-    >>> player = Player()
-    >>> update_values(states, player, 1)
-    >>> for k,v in player.value.items():
-    ...     print(f'{k}: {v}')
-    (('X', None, 'O'), ('O', 'O', None), ('X', None, 'X')): 0.1
-    (('X', None, 'O'), (None, 'O', None), (None, None, 'X')): 0.01
-    (('X', None, None), (None, 'O', None), (None, None, 'X')): 0.001
-    (('X', None, None), (None, None, None), (None, None, None)): 0.0001
-    """
-    reward = final_reward
-    for state in states[-1::-1]:
-        prior = player.value.get(state, player.base_value)
-        reward = prior + player.learning_rate * (reward - prior)
-        player.value[state] = round(reward, 5)
-
 def play_once_no_training(
     player_x: Player,
     player_o: Player,
@@ -179,8 +169,8 @@ def play_once_no_training(
     while not game_over:
         for marker, player in players.items():
             marker = cast(Marker, marker)
-            action = choose_action(board, player, marker)
-            board = get_updated_board(board, action, marker)
+            action = player.choose_action(board, marker)
+            board = get_updated_board(board, action)
             if verbose:
                 print(board)
             game_over, score = is_game_over(board, marker)
