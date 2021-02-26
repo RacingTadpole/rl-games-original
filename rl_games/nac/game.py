@@ -9,7 +9,9 @@ from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cas
 from copy import deepcopy
 
 Marker = Literal['X', 'O']
-Square = Optional[Marker]
+Square = Literal['X', 'O', '']
+
+x_marker, o_marker = cast(Marker, 'X'), cast(Marker, 'O')
 
 size = 3
 
@@ -70,7 +72,7 @@ class Player:
             # Greedy action - choose action with greatest expected value
             # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
             random.shuffle(actions)
-            max_reward = -1
+            max_reward = -1.0
             best_action = actions[0]
             for action in actions:
                 expected_reward = self.value(get_updated_board(board, action), marker)
@@ -89,18 +91,18 @@ def get_valid_next_markers(board: Board) -> Sequence[Marker]:
     >>> get_valid_next_markers((('X', 'O', 'O'), ('', 'O', 'O'), ('', '', 'X')))
     ()
     """
-    count = {'X': 0, 'O': 0}
+    count = {x_marker: 0, o_marker: 0}
     for r in range(size):
         for c in range(size):
             contents = board[r][c]
             if contents != '':
                 count[contents] += 1
-    if count['X'] == count['O'] + 1:
-        return ('O',)
-    if count['X'] == count['O'] - 1:
-        return ('X',)
-    if count['X'] == count['O']:
-        return ('X', 'O')
+    if count[x_marker] == count[o_marker] + 1:
+        return (o_marker,)
+    if count[x_marker] == count[o_marker] - 1:
+        return (x_marker,)
+    if count[x_marker] == count[o_marker]:
+        return (x_marker, o_marker)
     return ()
 
 def get_updated_board(board: Board, action: Action) -> Board:
@@ -142,7 +144,7 @@ def get_other_marker(marker: Marker) -> Marker:
     >>> get_other_marker('O')
     'X'
     """
-    return 'O' if marker == 'X' else 'X'
+    return o_marker if marker == x_marker else x_marker
 
 def is_game_over(board: Board, marker: Marker) -> Tuple[bool, int]:
     """
@@ -166,7 +168,7 @@ def play_once_no_training(
     player_o: Player,
     restrict_opening: bool = False,
     verbose = False
-) -> Optional[Marker]:
+) -> Square:
     """
     Returns the winner's marker, if any.
     No training.
@@ -176,7 +178,7 @@ def play_once_no_training(
     ['X', 'O', '', 'X', 'X']
     """
     board = get_init_board()
-    players = {'X': player_x, 'O': player_o}
+    players = {x_marker: player_x, o_marker: player_o}
     score = 0
     game_over = False
     while not game_over:
@@ -212,9 +214,9 @@ def play_many(
     >>> play_many(x, o)
     (0.618, 0.264)
     """
-    count = {'X': 0, 'O': 0}
+    count = {x_marker: 0, o_marker: 0}
     for _ in range(num_rounds):
         winner = play_once(player_x, player_o, restrict_opening=restrict_opening)
         if winner:
             count[winner] += 1
-    return count['X'] / num_rounds, count['O'] / num_rounds
+    return count[x_marker] / num_rounds, count[o_marker] / num_rounds

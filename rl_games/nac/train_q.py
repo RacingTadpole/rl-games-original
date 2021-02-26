@@ -12,7 +12,8 @@ from copy import deepcopy
 from collections import defaultdict
 
 from .game import (
-    Board, Player, Marker, Action,
+    Board, Player, Marker, Square, Action,
+    x_marker, o_marker,
     get_init_board, get_updated_board, get_actions,
     get_other_marker, is_game_over, play_many
 )
@@ -23,25 +24,30 @@ class QPlayer(Player):
     """
     >>> random.seed(2)
     >>> x, o = QPlayer(explore_chance=0.4), QPlayer(explore_chance=0.4)
-    >>> a = play_many(x, o, 20000, play_once=play_once_q_training, restrict_opening=True)
+    >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
 
     >>> x.explore_chance = 0
     >>> o.explore_chance = 0
-    >>> a = play_many(x, o, 10000, play_once=play_once_q_training, restrict_opening=True)
+    >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
 
     >>> x2 = QPlayer()
-    >>> play_many(x2, o, 10000, play_once=play_once_q_training, restrict_opening=True)
-    (0.582, 0.2847)
+    >>> play_many(x2, o, play_once=play_once_q_training, restrict_opening=True)
+    (0.622, 0.253)
 
     >>> # x.print_values()
-    >>> o.print_values()
+    >>> # o.print_values()
     """
-
     # Note the defaultdict defaults the action_value to 0, not to self.base_value.
     action_value: Dict[Tuple[Board, Action], float] = field(default_factory=lambda: defaultdict(float))
     discount_factor: float = 0.9
 
-    def value(self, board: Board, marker: Marker) -> float:
+    def value(self, board: Board, marker: Marker, get_actions=get_actions) -> float:
+        """
+        >>> random.seed(2)
+        >>> player = QPlayer(action_value={(1, 'a'): 2, (1, 'b'): 3, (1, 'c'): 7, (2, 'a'): 15})
+        >>> player.value(1, None, get_actions=lambda _, __: ('a', 'b', 'c'))
+        7
+        """
         actions = list(get_actions(board, marker))
         if len(actions):
             return max(self.action_value.get((board, action), self.base_value)
@@ -60,8 +66,8 @@ class QPlayer(Player):
 
     def print_values(self):
         for board in sorted({k[0]: 1 for k in self.action_value.keys()}.keys()):
-            x = self.value(board, 'X')
-            o = self.value(board, 'O')
+            x = self.value(board, x_marker)
+            o = self.value(board, o_marker)
             print(f'{board}: X={x:.5f} O={o:.5f}')
 
     def update_action_value(
@@ -70,7 +76,7 @@ class QPlayer(Player):
         action: Action,
         new_board: Board,
         reward: float,
-    ) -> '':
+    ) -> None:
         """
         >>> boards = [
         ...     (('', '', ''), ('', '', ''), ('', '', '')),
@@ -99,7 +105,7 @@ def play_once_q_training(
     player_o: QPlayer,
     verbose = False,
     restrict_opening: bool = False,
-) -> Optional[Marker]:
+) -> Square:
     """
     Returns the winner's marker, if any.
     >>> random.seed(1)
@@ -118,10 +124,10 @@ def play_once_q_training(
     (('', '', 'X'), ('', '', 'O'), ('X', 'X', 'O')): (1, 0, 'O') = 0.00000
     (('', 'X', 'X'), ('O', '', 'O'), ('X', 'X', 'O')): (0, 0, 'O') = -1.00000
     """
-    previous_board: Board = ''
-    previous_action: Action = ''
+    previous_board: Optional[Board] = None
+    previous_action: Optional[Action] = None
     board = get_init_board()
-    players = {'X': player_x, 'O': player_o}
+    players = {x_marker: player_x, o_marker: player_o}
     score = 0
     game_over = False
     while not game_over:
@@ -136,7 +142,7 @@ def play_once_q_training(
 
             game_over, score = is_game_over(new_board, marker)
             # Update the previous player's values based on this outcome.
-            if previous_board:
+            if previous_board and previous_action:
                 other_player.update_action_value(previous_board, previous_action, board, -score)
             # If it's game over, then this player too.
             if game_over:
@@ -149,4 +155,4 @@ def play_once_q_training(
         return marker
     if score < 0:
         return get_other_marker(marker)
-    return None
+    return ''

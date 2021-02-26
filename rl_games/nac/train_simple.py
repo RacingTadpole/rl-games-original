@@ -70,7 +70,7 @@ class SimplePlayer(Player):
         states: List[Board],
         marker: Marker,
         final_reward: float,
-    ) -> '':
+    ) -> None:
         """
         Boards are only added to state after your turn, so for 'X',
         don't see 'O' moves.
