@@ -7,7 +7,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, cast
+from typing import Tuple, Literal, Optional, Iterator, Dict, List
 from copy import deepcopy
 from collections import defaultdict
 
@@ -22,20 +22,28 @@ from .game import (
 @dataclass
 class QPlayer(Player):
     """
+    Learn as X (first player) against a random opponent.
     >>> random.seed(2)
-    >>> x, o = QPlayer(explore_chance=0.4), QPlayer(explore_chance=0.4)
+    >>> x, o = QPlayer(explore_chance=0.25), QPlayer(explore_chance=1)
     >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
+    >>> x.explore_chance = 0
+    >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
+    (0.93, 0.031)
 
+    Learn as O (second player) against a random opponent.
+    >>> x, o = QPlayer(explore_chance=1), QPlayer(explore_chance=0.25)
+    >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
+    >>> o.explore_chance = 0
+    >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
+    (0.134, 0.73)
+
+    Learn together.
+    >>> x, o = QPlayer(explore_chance=0.25), QPlayer(explore_chance=0.25)
+    >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
     >>> x.explore_chance = 0
     >>> o.explore_chance = 0
-    >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
-
-    >>> x2 = QPlayer()
-    >>> play_many(x2, o, play_once=play_once_q_training, restrict_opening=True)
-    (0.622, 0.253)
-
-    >>> # x.print_values()
-    >>> # o.print_values()
+    >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
+    (0.112, 0.057)
     """
     # Note the defaultdict defaults the action_value to 0, not to self.base_value.
     action_value: Dict[Tuple[Board, Action], float] = field(default_factory=lambda: defaultdict(float))
@@ -54,7 +62,38 @@ class QPlayer(Player):
                        for action in actions)
         # If no actions are possible, the game must be over, and the value is 0.
         return 0
-    
+
+    def choose_action(self, board: Board, marker: Marker, restrict_opening: bool = False) -> Action:
+        """
+        This differs from the simple version in that we use board directly, not the updated board.
+        >>> board = (('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X'))
+        >>> winning_board = (('X', 'X', 'O'), ('X', 'O', 'O'), ('O', '', 'X'))
+        >>> value = { winning_board: 0.5 }
+        >>> @dataclass
+        ... class DummyPlayer(Player):
+        ...     def value(self, board: Board, marker: Marker) -> float:
+        ...         return value.get(board, self.base_value)
+        >>> player = DummyPlayer(explore_chance=0)
+        >>> player.choose_action(board, 'O')
+        (2, 0, 'O')
+        """
+        actions = list(get_actions(board, marker, restrict_opening))
+        if random.uniform(0, 1) <= self.explore_chance:
+            # Explore
+            return random.choice(actions)
+        else:
+            # Greedy action - choose action with greatest expected value
+            # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
+            random.shuffle(actions)
+            max_reward = -1.0
+            best_action = actions[0]
+            for action in actions:
+                expected_reward = self.action_value.get((board, action), self.base_value)
+                if expected_reward > max_reward:
+                    max_reward = expected_reward
+                    best_action = action
+            return best_action
+
     def print_action_values(self):
         for (board, action), value in sorted(self.action_value.items()):
             print(f'{board}: {action} = {value:.5f}')
@@ -64,11 +103,12 @@ class QPlayer(Player):
             if value != 0:
                 print(f'{board}: {action} = {value:.5f}')
 
-    def print_values(self):
+    def print_values(self, print_zeroes = False):
         for board in sorted({k[0]: 1 for k in self.action_value.keys()}.keys()):
             x = self.value(board, x_marker)
             o = self.value(board, o_marker)
-            print(f'{board}: X={x:.5f} O={o:.5f}')
+            if print_zeroes or x != 0 or o != 0:
+                print(f'{board}: X={x:.5f} O={o:.5f}')
 
     def update_action_value(
         self,
@@ -78,6 +118,8 @@ class QPlayer(Player):
         reward: float,
     ) -> None:
         """
+        Note that new_board is the next board in which this player can move again",
+        ie. it includes an opponent's move.
         >>> boards = [
         ...     (('', '', ''), ('', '', ''), ('', '', '')),
         ...     (('X', '', ''), ('', 'O', ''), ('', '', '')),
@@ -98,6 +140,7 @@ class QPlayer(Player):
         self.action_value[old_board, action] += reward + self.learning_rate * (
             self.discount_factor * self.value(new_board, marker)
             - self.action_value[old_board, action])
+
 
 
 def play_once_q_training(
@@ -123,6 +166,15 @@ def play_once_q_training(
     (('', '', ''), ('', '', ''), ('X', 'X', 'O')): (1, 2, 'O') = 0.00000
     (('', '', 'X'), ('', '', 'O'), ('X', 'X', 'O')): (1, 0, 'O') = 0.00000
     (('', 'X', 'X'), ('O', '', 'O'), ('X', 'X', 'O')): (0, 0, 'O') = -1.00000
+    >>> random.seed(1)
+    >>> play_once_q_training(x, o)
+    'O'
+    >>> o.print_action_values()
+    (('', '', ''), ('', '', ''), ('X', '', '')): (2, 2, 'O') = 0.00000
+    (('', '', ''), ('', '', ''), ('X', 'X', 'O')): (1, 2, 'O') = 0.00000
+    (('', '', 'X'), ('', '', 'O'), ('X', 'X', 'O')): (1, 0, 'O') = 0.00000
+    (('', 'X', 'X'), ('O', '', 'O'), ('X', 'X', 'O')): (0, 0, 'O') = -1.00000
+    (('', 'X', 'X'), ('O', '', 'O'), ('X', 'X', 'O')): (1, 1, 'O') = 1.00000
     """
     previous_board: Optional[Board] = None
     previous_action: Optional[Action] = None
@@ -132,7 +184,6 @@ def play_once_q_training(
     game_over = False
     while not game_over:
         for marker, player in players.items():
-            marker = cast(Marker, marker)
             other_player = players[get_other_marker(marker)]
 
             action = player.choose_action(board, marker, restrict_opening)
@@ -143,8 +194,12 @@ def play_once_q_training(
             game_over, score = is_game_over(new_board, marker)
             # Update the previous player's values based on this outcome.
             if previous_board and previous_action:
-                other_player.update_action_value(previous_board, previous_action, board, -score)
-            # If it's game over, then this player too.
+                if verbose:
+                    print(f'updating previous player {previous_board} -- {previous_action}, {action} --> {new_board} = {-score}')
+                # The update includes both players' moves.
+                # From the previous player's point of view, this player's move is "part of the environment".
+                other_player.update_action_value(previous_board, previous_action, new_board, -score)
+            # If it's game over, then update this player too.
             if game_over:
                 player.update_action_value(board, action, new_board, score)
                 break

@@ -11,11 +11,13 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, cast
+from typing import Tuple, Literal, Optional, Iterator, Dict, List
 from copy import deepcopy
 
 from .game import (
-    Board, Player, Marker, get_init_board, get_updated_board, get_actions, get_other_marker, is_game_over, play_many
+    Board, Player, Marker, Square,
+    get_init_board, get_updated_board, get_actions, get_other_marker, is_game_over, play_many,
+    x_marker, o_marker
 )
 
 
@@ -40,6 +42,7 @@ class SimplePlayer(Player):
     (('X', 'O', 'O'), ('', 'X', 'X'), ('', 'X', 'O'))
     (('X', 'O', 'O'), ('O', 'X', 'X'), ('', 'X', 'O'))
     (('X', 'O', 'O'), ('O', 'X', 'X'), ('X', 'X', 'O'))
+    ''
     >>> play_many(x, o, play_once=play_once_simple_training)
     (0.166, 0.09)
 
@@ -101,7 +104,7 @@ def play_once_simple_training(
     player_o: SimplePlayer,
     verbose = False,
     restrict_opening = False,
-) -> Optional[Marker]:
+) -> Square:
     """
     Returns the winner's marker, if any.
     >>> random.seed(1)
@@ -123,13 +126,12 @@ def play_once_simple_training(
     O: (('', '', ''), ('', '', ''), ('X', '', 'O')): -0.0001
     """
     board = get_init_board()
-    history: Dict[Marker, List[Board]] = {'X': [], 'O': []}
-    players = {'X': player_x, 'O': player_o}
+    history: Dict[Marker, List[Board]] = {x_marker: [], o_marker: []}
+    players = {x_marker: player_x, o_marker: player_o}
     score = 0
     game_over = False
     while not game_over:
         for marker, player in players.items():
-            marker = cast(Marker, marker)
             action = player.choose_action(board, marker, restrict_opening)
             board = get_updated_board(board, action)
             if verbose:
@@ -139,7 +141,6 @@ def play_once_simple_training(
             if game_over:
                 break
 
-    marker = cast(Marker, marker)
     # Override the learning rate on the final board reward - just set it to the score. (Optional.)
     player._value[board] = score
     player.update_values(history[marker][:-1], marker, score)
@@ -152,4 +153,4 @@ def play_once_simple_training(
         return marker
     if score < 0:
         return other_marker
-    return None
+    return ''
