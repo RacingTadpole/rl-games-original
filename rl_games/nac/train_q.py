@@ -44,6 +44,10 @@ class QPlayer(Player):
     >>> o.explore_chance = 0
     >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
     (0.112, 0.057)
+
+    With enough training, the players almost always play to a draw.
+    #>>> play_many(x, o, 20000, play_once=play_once_q_training, restrict_opening=True)
+    #(0.0002, 0.00025)
     """
     # Note the defaultdict defaults the action_value to 0, not to self.base_value.
     action_value: Dict[Tuple[Board, Action], float] = field(default_factory=lambda: defaultdict(float))
