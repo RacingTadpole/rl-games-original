@@ -22,7 +22,7 @@ class NacState:
     next_go: Marker = x_marker
 
 
-@dataclass()
+@dataclass
 class Nac(Game[NacState, NacAction]):
     size: int = 3
     use_symmetry: bool = False
