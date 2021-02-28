@@ -1,6 +1,7 @@
 # pylint: disable=unsubscriptable-object
 
 import random
+from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 from typing import Iterator, Generic, TypeVar, Tuple
 from copy import deepcopy
@@ -8,20 +9,19 @@ from copy import deepcopy
 State = TypeVar('State')
 Action = TypeVar('Action')
 
-# Ideally this would be an abstract base class (abc) but mypy errors on dataclass abcs.
-# TODO: I think this would be nicer as just Game, with class methods only.
-@dataclass()
-class GameState(Generic[State, Action]):
-    state: State
-
-    def get_actions(self) -> Iterator[Action]:
+class Game(ABC, Generic[State, Action]):
+    @abstractmethod
+    def get_actions(self, state: State) -> Iterator[Action]:
         pass
 
-    def update(self, action: Action) -> None:
-        """
-        Updates state in-place.
-        """
+    @abstractmethod
+    def get_init_state(self) -> State:
         pass
 
-    def get_score_and_game_over(self) -> Tuple[int, bool]:
+    @abstractmethod
+    def updated(self, state: State, action: Action) -> State:
+        pass
+
+    @abstractmethod
+    def get_score_and_game_over(self, state: State) -> Tuple[int, bool]:
         pass

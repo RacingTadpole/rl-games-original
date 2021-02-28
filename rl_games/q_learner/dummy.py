@@ -2,23 +2,25 @@
 
 from dataclasses import dataclass
 from typing import Tuple
-from .game import GameState
+from .game import Game
 
-@dataclass()
-class DummyGame(GameState[int, bool]):
-    def get_actions(self):
+class DummyGame(Game[int, bool]):
+    def get_actions(self, state):
         yield True
         yield False
 
-    def update(self, action):
-        if action is True:
-            self.state += 1
-        else:
-            self.state -= 1
+    def get_init_state(self) -> int:
+        return 0
 
-    def get_score_and_game_over(self) -> Tuple[int, bool]:
-        if self.state == 5:
+    def updated(self, state, action):
+        if action is True:
+            return state + 1
+        else:
+            return state - 1
+
+    def get_score_and_game_over(self, state) -> Tuple[int, bool]:
+        if state == 4:
             return 1, True
-        if self.state == -5:
+        if state == -4:
             return 1, False
         return 0, False
