@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass
 from typing import Tuple
-from .game import Game
+from .game import GameState
 
 @dataclass()
-class DummyGame(Game[int, bool]):
+class DummyGame(GameState[int, bool]):
     def get_actions(self):
         yield True
         yield False

@@ -6,7 +6,7 @@ import random
 from dataclasses import dataclass, field
 from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar
 from copy import deepcopy
-from .game import Game
+from .game import GameState
 
 Marker = Literal['X', 'O']
 Square = Literal['X', 'O', '']
@@ -57,7 +57,7 @@ class NacState:
 
 
 @dataclass()
-class Nac(Game[NacState, NacAction]):
+class Nac(GameState[NacState, NacAction]):
     use_symmetry: bool = False
 
     def get_actions(self):
