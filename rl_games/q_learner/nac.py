@@ -35,7 +35,7 @@ class Nac(Game[NacState, NacAction]):
         """
         return NacState(board=((empty_square,) * self.size,) * self.size, next_turn=next_turn)
 
-    def get_actions(self, state):
+    def get_actions(self, state: NacState):
         """
         >>> game = Nac()
         >>> state = game.get_init_state()

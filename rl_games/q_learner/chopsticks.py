@@ -19,12 +19,15 @@ class ChopsticksState:
     finger_counts: Tuple[PlayerState, ...] = ()
     next_turn: PlayerIndex = 0
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class ChopsticksAction:
     from_hand: HandIndex
     to_player: PlayerIndex
     to_hand: HandIndex
-    number: FingerCount
+    fingers: FingerCount
+
+    def __repr__(self) -> str:
+        return f'H{self.from_hand} -> P{self.to_player} H{self.to_hand}: {self.fingers}'
 
 
 @dataclass
@@ -40,20 +43,35 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         """
         return ChopsticksState(finger_counts=((1,) * self.num_hands,) * self.num_players, next_turn=next_turn)
 
-    def get_actions(self, state):
+    def get_actions(self, state: ChopsticksState):
         """
         >>> game = Chopsticks()
         >>> state = game.get_init_state()
         >>> len(list(game.get_actions(state)))
-        9
-        >>> state = ChopsticksState((('X', '', 'O'), ('X', 'O', 'O'), ('', '', 'X')))
+        6
+        >>> state = ChopsticksState(((1, 1), (2, 0)), 0)
         >>> list(game.get_actions(state))
-        [(0, 1), (2, 0), (2, 1)]
-        >>> state = ChopsticksState((('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X')))
+        [H0 -> P0 H1: 1, H0 -> P1 H0: 1, H0 -> P1 H1: 1, H1 -> P0 H0: 1, H1 -> P1 H0: 1, H1 -> P1 H1: 1]
+        >>> state = ChopsticksState(((1, 1), (2, 0)), 1)
         >>> list(game.get_actions(state))
-        [(2, 0), (2, 1)]
+        [H0 -> P0 H0: 1, H0 -> P0 H1: 1, H0 -> P1 H1: 1, H0 -> P0 H0: 2, H0 -> P0 H1: 2]
         """
-        pass
+        this_player = state.next_turn
+        for from_hand in range(self.num_hands):
+            num_fingers = state.finger_counts[this_player][from_hand]
+            for fingers in range(1, 1 + num_fingers):
+                for to_player in range(self.num_players):
+                    for to_hand in range(self.num_hands):
+                        # Special rules when giving to yourself:
+                        # 1. You can't transfer to the same hand
+                        # 2. You can't transfer all of one hand to your own 0-finger hand
+                        if to_player == this_player:
+                            if from_hand == to_hand:
+                                continue
+                            if fingers == num_fingers and state.finger_counts[this_player][to_hand] == 0:
+                                continue
+                        yield ChopsticksAction(from_hand, to_player, to_hand, fingers)
+
 
     def updated(self, state: ChopsticksState, action: ChopsticksAction) -> ChopsticksState:
         """
