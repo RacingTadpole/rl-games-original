@@ -12,9 +12,9 @@ def nac_play_many(
     **kwargs
 ):
     """
-    >>> random.seed(2)
-    >>> x, o = Player('X'), Player('O')
-    >>> nac_play_many([x, o])
+    random.seed(2)
+    x, o = Player('X'), Player('O')
+    nac_play_many([x, o])
     {'X': 0.376, 'O': 0.185}
     """
     game = Nac()

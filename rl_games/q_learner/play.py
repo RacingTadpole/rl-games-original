@@ -2,7 +2,7 @@
 
 import random
 from dataclasses import dataclass
-from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence
+from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence, Union
 from collections import defaultdict
 
 from .game import State, Action, Game
@@ -97,8 +97,60 @@ def play(
             return players[0] if player == players[1] else players[1]
     return None
 
-def play_many(
+def get_human_action(game: Game, state: State, player_name: str) -> Action:
+    actions = list(game.get_actions(state))
+    print(state)
+    choice = 0
+    while choice < 1 or choice > len(actions):
+        print(f'Your turn {player_name}. The available actions are:')
+        for index, action in enumerate(actions):
+            print(index + 1, action)
+        choice = input('Please choose a number: ')
+        try:
+            choice = int(choice)
+        except:
+            choice = 0
+    return actions[choice - 1]
+    
 
+def play_human(
+    game: Game,
+    players: Sequence[Union[Player, str]],
+    verbose = False,
+) -> Optional[Union[Player, str]]:
+    """
+    Plays a multiplayer game against a human to the end, and reports the winner.
+    Pass a string representing the name of the player for any human players.
+    Does not update the players.
+    """
+    state = game.get_init_state()
+    score = 0
+    game_over = False
+    while not game_over:
+        for player in players:
+            if isinstance(player, str):
+                # Ask the human for their action.
+                action = get_human_action(game, state, player)
+            else:
+                # Choose an AI action.
+                action = player.choose_action(game, state)
+            new_state = game.updated(state, action)
+            reward, game_over = game.get_score_and_game_over(new_state)
+            # Finally, update the state for the next player.
+            state = new_state
+            if game_over:
+                break
+
+    if reward > 0:
+        return player
+    if score < 0:
+        # If there are two players, the other player must have won.
+        # Otherwise, there was no winner, only a loser.
+        if len(players) == 2:
+            return players[0] if player == players[1] else players[1]
+    return None
+
+def play_many(
     game: Game,
     players: Sequence[Player],
     num_rounds = 1000,
