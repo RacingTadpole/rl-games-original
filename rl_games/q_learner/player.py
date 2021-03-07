@@ -24,11 +24,11 @@ class Player(Generic[State, Action]):
     def choose_action(self, game: Game[State, Action], state: State) -> Action:
         """
         >>> from .countdown import Countdown
-        >>> random.seed(2)
+        >>> random.seed(3)
         >>> game = Countdown()
-        >>> player = Player[int, bool](explore_chance=0)
-        >>> player.choose_action(game, 1), player.choose_action(game, 1)
-        (False, True)
+        >>> player = Player[int, int](explore_chance=0)
+        >>> player.choose_action(game, 5), player.choose_action(game, 5)
+        (2, 3)
         """
         actions = list(game.get_actions(state))
         if random.uniform(0, 1) <= self.explore_chance:
@@ -52,9 +52,9 @@ class Player(Generic[State, Action]):
         >>> from .countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
-        >>> player = Player[int, bool](action_value={(1, True): 2, (1, False): 3, (2, True): -7, (3, False): 15})
+        >>> player = Player[int, int](action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
         >>> player.value(game, 1), player.value(game, 2), player.value(game, 3)
-        (3, 0, 15)
+        (1, 0, 2)
         """
         actions = list(game.get_actions(state))
         if len(actions):
