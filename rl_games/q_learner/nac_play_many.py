@@ -8,7 +8,6 @@ from .nac import Nac
 
 def nac_play_many(
     players: Sequence[Player],
-    num_rounds = 1000,
     *args,
     **kwargs
 ):
@@ -19,4 +18,4 @@ def nac_play_many(
     {'X': 0.376, 'O': 0.185}
     """
     game = Nac()
-    return play_many(game, players, *args, num_rounds=num_rounds, **kwargs)
+    return play_many(game, players, *args, **kwargs)

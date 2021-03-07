@@ -5,7 +5,7 @@ from typing import Tuple
 from .game import Game
 
 @dataclass
-class CountdownGame(Game[int, int]):
+class Countdown(Game[int, int]):
     """
     A simple game where the state is a number, and actions are numbers from 1 to 3.
     Start at 20 and when you hit 0, you win a point and end the game.

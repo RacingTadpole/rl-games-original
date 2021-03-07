@@ -23,9 +23,9 @@ class Player(Generic[State, Action]):
 
     def choose_action(self, game: Game[State, Action], state: State) -> Action:
         """
-        >>> from .countdown_game import CountdownGame
+        >>> from .countdown import Countdown
         >>> random.seed(2)
-        >>> game = CountdownGame()
+        >>> game = Countdown()
         >>> player = Player[int, bool](explore_chance=0)
         >>> player.choose_action(game, 1), player.choose_action(game, 1)
         (False, True)
@@ -49,9 +49,9 @@ class Player(Generic[State, Action]):
 
     def value(self, game: Game, state: State) -> float:
         """
-        >>> from .countdown_game import CountdownGame
+        >>> from .countdown import Countdown
         >>> random.seed(2)
-        >>> game = CountdownGame()
+        >>> game = Countdown()
         >>> player = Player[int, bool](action_value={(1, True): 2, (1, False): 3, (2, True): -7, (3, False): 15})
         >>> player.value(game, 1), player.value(game, 2), player.value(game, 3)
         (3, 0, 15)
@@ -74,9 +74,9 @@ class Player(Generic[State, Action]):
         Note that new_state is the next state in which this player can move again,
         ie. it includes opponent moves.
         We'll imagine the dummy game is a 2-player game.
-        >>> from .countdown_game import CountdownGame
+        >>> from .countdown import Countdown
         >>> random.seed(2)
-        >>> game = CountdownGame()
+        >>> game = Countdown()
         >>> player = Player()
         >>> player.update_action_value(game, 4, True, 6, 1)
         >>> player.update_action_value(game, 2, True, 4, 0)

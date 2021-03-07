@@ -19,13 +19,21 @@ NacAction = Tuple[int, int]
 @dataclass(frozen=True)
 class NacState:
     board: Tuple[Tuple[Square, ...], ...] = ()
-    next_go: Marker = x_marker
+    next_turn: Marker = x_marker
 
 
 @dataclass
 class Nac(Game[NacState, NacAction]):
     size: int = 3
     use_symmetry: bool = False
+
+    def get_init_state(self, next_turn=x_marker) -> NacState:
+        """
+        >>> game = Nac()
+        >>> game.get_init_state()
+        NacState(board=(('', '', ''), ('', '', ''), ('', '', '')), next_turn='X')
+        """
+        return NacState(board=((empty_square,) * self.size,) * self.size, next_turn=next_turn)
 
     def get_actions(self, state):
         """
@@ -51,29 +59,21 @@ class Nac(Game[NacState, NacAction]):
                 if state.board[r][c] == empty_square:
                     yield (r, c)
 
-    def get_init_state(self, next_go=x_marker) -> NacState:
-        """
-        >>> game = Nac()
-        >>> game.get_init_state()
-        NacState(board=(('', '', ''), ('', '', ''), ('', '', '')), next_go='X')
-        """
-        return NacState(board=((empty_square,) * self.size,) * self.size, next_go=next_go)
-
     def updated(self, state: NacState, action: NacAction) -> NacState:
         """
         >>> game = Nac()
-        >>> state = game.get_init_state(next_go=o_marker)
+        >>> state = game.get_init_state(next_turn=o_marker)
         >>> game.updated(state, (2, 1))
-        NacState(board=(('', '', ''), ('', '', ''), ('', 'O', '')), next_go='X')
+        NacState(board=(('', '', ''), ('', '', ''), ('', 'O', '')), next_turn='X')
         >>> state = NacState((('X', '', 'O'), ('X', 'O', 'O'), ('', '', 'X')))
         >>> game.updated(state, (0, 1))
-        NacState(board=(('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X')), next_go='O')
+        NacState(board=(('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X')), next_turn='O')
         """
         new_board = [list(row) for row in state.board]
-        new_board[action[0]][action[1]] = state.next_go
+        new_board[action[0]][action[1]] = state.next_turn
         return NacState(
             tuple(tuple(row) for row in new_board),
-            next_go='X' if state.next_go == 'O' else 'O',
+            next_turn='X' if state.next_turn == 'O' else 'O',
         )
 
     def _get_winner(self, state: NacState) -> Optional[Marker]:
@@ -105,13 +105,13 @@ class Nac(Game[NacState, NacAction]):
         >>> state = NacState((('X', 'X', 'O'), ('X', 'O', 'O'), ('O', '', 'X')))
         >>> game.get_score_and_game_over(state)  # O is the winner; X is the next player
         (1, True)
-        >>> state = NacState(state.board, next_go=o_marker)
+        >>> state = NacState(state.board, next_turn=o_marker)
         >>> game.get_score_and_game_over(state)
         (-1, True)
         """
         winner = self._get_winner(state)
         if winner is not None:
-            if winner == state.next_go:
+            if winner == state.next_turn:
                 return -1, True
             return 1, True
         return 0, all(s for row in state.board for s in row)

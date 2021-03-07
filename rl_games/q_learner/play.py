@@ -29,8 +29,8 @@ def play(
     Plays a multiplayer game to the end, and reports the winner.
     Updates each player.
 
-    >>> from .countdown_game import CountdownGame
-    >>> game = CountdownGame()
+    >>> from .countdown import Countdown
+    >>> game = Countdown()
     >>> def nice_action_value(player: Player):
     ...    return player.id, {k: float(f'{v:.4f}') for k, v in player.action_value.items() if v != 0}
 
@@ -103,20 +103,20 @@ def play_many(
     players: Sequence[Player],
     num_rounds = 1000,
     verbose = False,
-) -> Tuple[float, float]:
+) -> Dict[str, float]:
     """
     Returns the fraction won by each player.
     Starting at 20, B can always win.
 
-    >>> from .countdown_game import CountdownGame
-    >>> game = CountdownGame(start=20)
+    >>> from .countdown import Countdown
+    >>> game = Countdown(start=20)
     >>> random.seed(2)
     >>> a, b = Player('A'), Player('B')
     >>> play_many(game, [a, b])
     {'A': 0.243, 'B': 0.757}
 
     If we had started at 21, then A can always win.
-    >>> game = CountdownGame(start=21)
+    >>> game = Countdown(start=21)
     >>> random.seed(2)
     >>> a, b = Player('A'), Player('B')
     >>> play_many(game, [a, b])
