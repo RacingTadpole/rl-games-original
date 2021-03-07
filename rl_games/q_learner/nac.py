@@ -49,7 +49,7 @@ class Nac(Game[NacState, NacAction]):
         [(2, 0), (2, 1)]
         """
         if self.use_symmetry and all(s == empty_square for row in state.board for s in row):
-            if state.board.size != 3:
+            if self.size != 3:
                 raise NotImplementedError('Use symmetry only works for size 3 currently.')
             for r, c in [(0, 0), (1, 0), (1, 1)]:
                 yield (r, c)
