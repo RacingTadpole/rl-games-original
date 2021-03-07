@@ -24,4 +24,8 @@ class Game(ABC, Generic[State, Action]):
 
     @abstractmethod
     def get_score_and_game_over(self, state: State) -> Tuple[int, bool]:
+        """
+        Return the reward for the player who took the most recent turn (ie. who got directly to this state).
+        All other players get minus this reward.
+        """
         pass

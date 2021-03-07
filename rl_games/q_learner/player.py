@@ -4,7 +4,7 @@
 # Reinforcement Learning - Q training.
 # Each player keeps a "Q table", ie. a mapping of (board, action) to values.
 # The values are updated every turn using the Bellman equation.
-
+import sys
 import random
 from dataclasses import dataclass, field
 from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence
@@ -15,7 +15,7 @@ from .game import State, Action, Game
 
 @dataclass
 class Player(Generic[State, Action]):
-    id: str = ''
+    id: str = field(default_factory=lambda: f'{random.randrange(sys.maxsize)}')
     learning_rate: float = 0.1
     explore_chance: float = 0.1
     action_value: Dict[Tuple[State, Action], float] = field(default_factory=lambda: defaultdict(float))
@@ -26,7 +26,7 @@ class Player(Generic[State, Action]):
         >>> from .countdown import Countdown
         >>> random.seed(3)
         >>> game = Countdown()
-        >>> player = Player[int, int](explore_chance=0)
+        >>> player = Player[int, int]('A', explore_chance=0)
         >>> player.choose_action(game, 5), player.choose_action(game, 5)
         (2, 3)
         """

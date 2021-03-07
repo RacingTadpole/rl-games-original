@@ -98,6 +98,7 @@ class Nac(Game[NacState, NacAction]):
 
     def get_score_and_game_over(self, state: NacState) -> Tuple[int, bool]:
         """
+        Because this is a two player game, the last player to take a turn was "not" state.next_turn.
         >>> game = Nac()
         >>> state = NacState((('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X')))
         >>> game.get_score_and_game_over(state)
