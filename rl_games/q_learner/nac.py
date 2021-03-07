@@ -16,7 +16,7 @@ x_marker, o_marker, empty_square = cast(Marker, 'X'), cast(Marker, 'O'), cast(Sq
 NacAction = Tuple[int, int]
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NacState:
     board: Tuple[Tuple[Square, ...], ...] = ()
     next_go: Marker = x_marker
@@ -86,6 +86,8 @@ class Nac(Game[NacState, NacAction]):
         'O'
         """
         b, size = state.board, self.size
+        if size > 3:
+            raise NotImplementedError('Only max size 3 boards implemented.')
         for m in (x_marker, o_marker):
             if any(all(b[r][c] == m for c in range(size)) for r in range(size)) or \
             any(all(b[r][c] == m for r in range(size)) for c in range(size)) or \

@@ -26,7 +26,7 @@ def get_actions(board: Board, marker: Marker, restrict_opening: bool = False) ->
     [(0, 1, 'X'), (2, 0, 'X'), (2, 1, 'X')]
     >>> list(get_actions((('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X')), 'X'))
     []
-    >>> len(get_actions((('', '', ''), ('', '', ''), ('', '', '')), 'X'))
+    >>> len(list(get_actions((('', '', ''), ('', '', ''), ('', '', '')), 'X')))
     9
     >>> list(get_actions((('', '', ''), ('', '', ''), ('', '', '')), 'X', restrict_opening=True))
     [(0, 0, 'X'), (1, 0, 'X'), (1, 1, 'X')]
