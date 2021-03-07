@@ -104,7 +104,7 @@ def get_human_action(game: Game, state: State, player_name: str) -> Action:
     while choice < 1 or choice > len(actions):
         print(f'Your turn {player_name}. The available actions are:')
         for index, action in enumerate(actions):
-            print(index + 1, action)
+            print(f'{index + 1}.', action)
         choice = input('Please choose a number: ')
         try:
             choice = int(choice)

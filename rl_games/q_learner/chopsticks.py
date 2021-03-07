@@ -30,7 +30,7 @@ class ChopsticksAction:
     fingers: FingerCount
 
     def __repr__(self) -> str:
-        return f'H{self.from_hand} -> P{self.to_player} H{self.to_hand}: {self.fingers}'
+        return f'{self.fingers} from H{self.from_hand + 1} -> P{self.to_player + 1} H{self.to_hand + 1}'
 
 
 @dataclass
@@ -55,10 +55,10 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         6
         >>> state = ChopsticksState(((1, 1), (2, 0)), 0)
         >>> list(game.get_actions(state))
-        [H0 -> P0 H1: 1, H0 -> P1 H0: 1, H0 -> P1 H1: 1, H1 -> P0 H0: 1, H1 -> P1 H0: 1, H1 -> P1 H1: 1]
+        [1 from H1 -> P1 H2, 1 from H1 -> P2 H1, 1 from H2 -> P1 H1, 1 from H2 -> P2 H1]
         >>> state = ChopsticksState(((1, 1), (2, 0)), 1)
         >>> list(game.get_actions(state))
-        [H0 -> P0 H0: 1, H0 -> P0 H1: 1, H0 -> P1 H1: 1, H0 -> P0 H0: 2, H0 -> P0 H1: 2]
+        [1 from H1 -> P1 H1, 1 from H1 -> P1 H2, 1 from H1 -> P2 H2]
         """
         this_player = state.next_turn
         for from_hand in range(self.num_hands):
@@ -67,13 +67,25 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
                 for to_player in range(self.num_players):
                     for to_hand in range(self.num_hands):
                         # Special rules when giving to yourself:
-                        # 1. You can't transfer to the same hand
-                        # 2. You can't transfer all of one hand to your own 0-finger hand
+                        # 1. You can't transfer to the same hand (of course).
+                        # 2. You can't leave the set of finger counts unchanged.
                         if to_player == this_player:
                             if from_hand == to_hand:
                                 continue
-                            if fingers == num_fingers and state.finger_counts[this_player][to_hand] == 0:
+                            if set(state.finger_counts[this_player]) == {
+                                x if i not in [from_hand, to_hand] else (x - fingers if i == from_hand else x + fingers)
+                                for i, x in enumerate(state.finger_counts[this_player])
+                            }:
                                 continue
+                        # Special rules when hitting another player:
+                        # 1. You can't hit a 0-finger hand.
+                        # 2. You can't give away all of your fingers.
+                        else:
+                            if state.finger_counts[to_player][to_hand] == 0:
+                                continue
+                            if fingers == sum(state.finger_counts[this_player]):
+                                continue
+
                         yield ChopsticksAction(from_hand, to_player, to_hand, fingers)
 
 
@@ -83,21 +95,22 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         >>> state = game.get_init_state(next_turn=0)
         >>> actions = list(game.get_actions(state))
         >>> actions[0], actions[1]
-        (H0 -> P0 H1: 1, H0 -> P1 H0: 1)
+        (1 from H1 -> P1 H2, 1 from H1 -> P2 H1)
         >>> game.updated(state, actions[0])
         ChopsticksState(finger_counts=((0, 2), (1, 1)), next_turn=1, num_rounds=1)
         >>> game.updated(state, actions[1])
-        ChopsticksState(finger_counts=((0, 1), (2, 1)), next_turn=1, num_rounds=1)
+        ChopsticksState(finger_counts=((1, 1), (2, 1)), next_turn=1, num_rounds=1)
         >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_turn=1)
         >>> game.updated(state, ChopsticksAction(from_hand=0, to_player=0, to_hand=0, fingers=1))
-        ChopsticksState(finger_counts=((0, 1), (0, 1)), next_turn=0, num_rounds=1)
+        ChopsticksState(finger_counts=((0, 1), (1, 1)), next_turn=0, num_rounds=1)
         """
         this_player = state.next_turn
         updated_counts = [list(player_state) for player_state in state.finger_counts]
         updated_counts[action.to_player][action.to_hand] += action.fingers
         if updated_counts[action.to_player][action.to_hand] > self.fingers_per_hand:
             updated_counts[action.to_player][action.to_hand] = 0
-        updated_counts[this_player][action.from_hand] -= action.fingers
+        if this_player == action.to_player:
+            updated_counts[this_player][action.from_hand] -= action.fingers
         return ChopsticksState(
             finger_counts=tuple(tuple(player_state) for player_state in updated_counts),
             next_turn=(this_player + 1) % self.num_players,

@@ -15,7 +15,7 @@ def chopsticks_play_many(
     >>> random.seed(2)
     >>> a, b = Player('A'), Player('B')
     >>> chopsticks_play_many([a, b])
-    {'A': 0.544, 'B': 0.456}
+    {'A': 0.964, 'B': 0.036}
     """
     game = Chopsticks()
     return play_many(game, players, *args, **kwargs)
