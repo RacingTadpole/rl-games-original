@@ -33,7 +33,7 @@ class ChopsticksAction:
     fingers: FingerCount
 
     def __repr__(self) -> str:
-        return f'{self.fingers} from H{self.from_hand + 1} -> P{self.to_player + 1} H{self.to_hand + 1}'
+        return f'H{self.from_hand + 1} {self.fingers} -> H{self.to_hand + 1} P{self.to_player + 1}'
 
 
 @dataclass
@@ -58,16 +58,13 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         6
         >>> state = ChopsticksState(((0, 1), (2, 0)), 0)
         >>> list(game.get_actions(state))
-        [1 from H2 -> P2 H1]
+        [H2 1 -> H1 P2]
         >>> state = ChopsticksState(((1, 1), (2, 0)), 0)
         >>> list(game.get_actions(state))
-        [1 from H1 -> P1 H2, 1 from H1 -> P2 H1, 1 from H2 -> P1 H1, 1 from H2 -> P2 H1]
+        [H1 1 -> H2 P1, H1 1 -> H1 P2, H2 1 -> H1 P1, H2 1 -> H1 P2]
         >>> state = ChopsticksState(((1, 1), (2, 0)), 1)
         >>> list(game.get_actions(state))
-        [1 from H1 -> P1 H1, 1 from H1 -> P1 H2, 1 from H1 -> P2 H2, 2 from H1 -> P1 H1, 2 from H1 -> P1 H2]
-        >>> state = ChopsticksState(((1, 2), (4, 0)), 0)
-        >>> list(game.get_actions(state))
-        [1 from H1 -> P1 H2, 1 from H1 -> P2 H1, 1 from H2 -> P2 H1, 2 from H2 -> P1 H1, 2 from H2 -> P2 H1]
+        [H1 1 -> H1 P1, H1 1 -> H2 P1, H1 1 -> H2 P2, H1 2 -> H1 P1, H1 2 -> H2 P1]
         """
         this_player = state.next_turn
         for from_hand in range(self.num_hands):
@@ -101,7 +98,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         >>> state = game.get_init_state(next_turn=0)
         >>> actions = list(game.get_actions(state))
         >>> actions[0], actions[1]
-        (1 from H1 -> P1 H2, 1 from H1 -> P2 H1)
+        (H1 1 -> H2 P1, H1 1 -> H1 P2)
         >>> game.updated(state, actions[0])
         ChopsticksState(finger_counts=((0, 2), (1, 1)), next_turn=1, num_rounds=1)
         >>> game.updated(state, actions[1])
