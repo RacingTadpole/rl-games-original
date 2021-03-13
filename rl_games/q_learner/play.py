@@ -99,10 +99,9 @@ def play(
 
 def get_human_action(game: Game[State, Action], state: State, player_name: str) -> Action:
     actions = list(game.get_actions(state))
-    print(state)
     choice = 0
     while choice < 1 or choice > len(actions):
-        print(f'Your turn {player_name}. The available actions are:')
+        print(f'Your turn {player_name}. You can choose:')
         for index, action in enumerate(actions):
             print(f'{index + 1}.', action)
         choice_str = input('Please choose a number: ')
@@ -128,17 +127,25 @@ def play_human(
     game_over = False
     while not game_over:
         for player in players:
+            print()
+            print(state)
+            print()
             if isinstance(player, str):
                 # Ask the human for their action.
                 action = get_human_action(game, state, player)
             else:
                 # Choose an AI action.
                 action = player.choose_action(game, state)
+                print(f'{player.id}: {action}')
             new_state = game.updated(state, action)
             reward, game_over = game.get_score_and_game_over(new_state)
             # Finally, update the state for the next player.
             state = new_state
             if game_over:
+                print()
+                print(new_state)
+                print('Game over!')
+                print()
                 break
 
     if reward > 0:

@@ -8,7 +8,7 @@ if __name__ == '__main__':
     from rl_games.q_learner.play import play_many
 
     game = Nac()
-    players = Player('X'), Player('O')
+    players = [Player('X'), Player('O')]
 
     play_many(game, players, 4000)
     for player in players:
@@ -16,11 +16,17 @@ if __name__ == '__main__':
     play_many(game, players, 3000)
     for player in players:
         player.explore_chance = 0.05
-    print(play_many(game, players, 2000))
+    play_many(game, players, 2000)
     for player in players:
         player.explore_chance = 0
 
-    winner = play_human(game, [players[0], 'human'])
+    try:
+        index = int(input(f'Play as player number {tuple(range(1, 1 + len(players)))}? '))
+    except ValueError:
+        index = 1
+    players[index - 1] = 'human'
+    winner = play_human(game, players)
+
     if winner:
         if isinstance(winner, str):
             print(f'Congratulations, the winner was {winner}!')
