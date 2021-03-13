@@ -16,7 +16,6 @@ def chopsticks_play_many(
     >>> a, b = Player('A'), Player('B')
     >>> chopsticks_play_many([a, b])
     {'A': 0.442, 'B': 0.558}
-    >>> chopsticks_play_many([a, b])
     """
     game = Chopsticks()
     return play_many(game, players, *args, **kwargs)

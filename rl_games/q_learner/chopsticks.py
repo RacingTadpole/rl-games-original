@@ -65,6 +65,9 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         >>> state = ChopsticksState(((1, 1), (2, 0)), 1)
         >>> list(game.get_actions(state))
         [1 from H1 -> P1 H1, 1 from H1 -> P1 H2, 1 from H1 -> P2 H2, 2 from H1 -> P1 H1, 2 from H1 -> P1 H2]
+        >>> state = ChopsticksState(((1, 2), (4, 0)), 0)
+        >>> list(game.get_actions(state))
+        [1 from H1 -> P1 H2, 1 from H1 -> P2 H1, 1 from H2 -> P2 H1, 2 from H2 -> P1 H1, 2 from H2 -> P2 H1]
         """
         this_player = state.next_turn
         for from_hand in range(self.num_hands):

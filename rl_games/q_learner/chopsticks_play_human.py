@@ -10,10 +10,10 @@ if __name__ == '__main__':
     players = [Player('AI 1'), Player('AI 2')]
     game = Chopsticks()
 
-    play_many(game, players, 2000)
+    play_many(game, players, 4000)
     for player in players:
         player.explore_chance = 0.1
-    play_many(game, players, 2000)
+    play_many(game, players, 3000)
     for player in players:
         player.explore_chance = 0.05
     play_many(game, players, 2000)

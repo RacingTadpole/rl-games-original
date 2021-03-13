@@ -10,13 +10,13 @@ if __name__ == '__main__':
     game = Nac()
     players = Player('X'), Player('O')
 
-    play_many(game, players, 2000)
+    play_many(game, players, 4000)
     for player in players:
         player.explore_chance = 0.1
-    play_many(game, players, 2000)
+    play_many(game, players, 3000)
     for player in players:
         player.explore_chance = 0.05
-    play_many(game, players, 2000)
+    print(play_many(game, players, 2000))
     for player in players:
         player.explore_chance = 0
 
