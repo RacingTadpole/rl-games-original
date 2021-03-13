@@ -97,7 +97,7 @@ def play(
             return players[0] if player == players[1] else players[1]
     return None
 
-def get_human_action(game: Game, state: State, player_name: str) -> Action:
+def get_human_action(game: Game[State, Action], state: State, player_name: str) -> Action:
     actions = list(game.get_actions(state))
     print(state)
     choice = 0
@@ -105,19 +105,19 @@ def get_human_action(game: Game, state: State, player_name: str) -> Action:
         print(f'Your turn {player_name}. The available actions are:')
         for index, action in enumerate(actions):
             print(f'{index + 1}.', action)
-        choice = input('Please choose a number: ')
+        choice_str = input('Please choose a number: ')
         try:
-            choice = int(choice)
+            choice = int(choice_str)
         except:
             choice = 0
     return actions[choice - 1]
     
 
 def play_human(
-    game: Game,
-    players: Sequence[Union[Player, str]],
+    game: Game[State, Action],
+    players: Sequence[Union[Player[State, Action], str]],
     verbose = False,
-) -> Optional[Union[Player, str]]:
+) -> Optional[Union[Player[State, Action], str]]:
     """
     Plays a multiplayer game against a human to the end, and reports the winner.
     Pass a string representing the name of the player for any human players.
