@@ -20,17 +20,22 @@ if __name__ == '__main__':
     for player in players:
         player.explore_chance = 0
 
-    try:
-        index = int(input(f'Play as player number {tuple(range(1, 1 + len(players)))}? '))
-    except ValueError:
-        index = 1
-    players[index - 1] = 'human'
-    winner = play_human(game, players)
+    while True:
+        try:
+            index_str = input(f'Play as player number {tuple(range(1, 1 + len(players)))}? ')
+            if index_str == '':
+                break
+            index = int(index_str)
+        except ValueError:
+            index = 1
+        players[index - 1] = 'human'
+        winner = play_human(game, players)
 
-    if winner:
-        if isinstance(winner, str):
-            print(f'Congratulations, the winner was {winner}!')
+        if winner is not None:
+            if isinstance(winner, str):
+                print(f'Congratulations, the winner was {winner}!')
+            else:
+                print(f'The winner was {winner.id}')
         else:
-            print(f'The winner was {winner.id}')
-    else:
-        print('The game was a draw.')
+            print('The game was a draw.')
+        print()

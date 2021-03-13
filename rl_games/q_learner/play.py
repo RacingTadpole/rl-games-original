@@ -58,7 +58,6 @@ def play(
     """
     turn_records: List[TurnRecord] = [TurnRecord()] * len(players)
     state = game.get_init_state()
-    score = 0
     game_over = False
     while not game_over:
         for index, player in enumerate(players):
@@ -90,7 +89,7 @@ def play(
         p.update_action_value(game, turn_record.state, turn_record.action, state, turn_record.reward)
     if reward > 0:
         return player
-    if score < 0:
+    if reward < 0:
         # If there are two players, the other player must have won.
         # Otherwise, there was no winner, only a loser.
         if len(players) == 2:
@@ -123,7 +122,6 @@ def play_human(
     Does not update the players.
     """
     state = game.get_init_state()
-    score = 0
     game_over = False
     while not game_over:
         for player in players:
@@ -150,7 +148,7 @@ def play_human(
 
     if reward > 0:
         return player
-    if score < 0:
+    if reward < 0:
         # If there are two players, the other player must have won.
         # Otherwise, there was no winner, only a loser.
         if len(players) == 2:
