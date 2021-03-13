@@ -108,7 +108,7 @@ def get_human_action(game: Game[State, Action], state: State, player_name: str) 
         try:
             choice = int(choice_str)
         except:
-            choice = 0
+            choice = 1
     return actions[choice - 1]
     
 

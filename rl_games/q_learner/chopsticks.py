@@ -8,7 +8,7 @@ from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cas
 from copy import deepcopy
 from .game import Game
 
-MAX_ROUNDS = 1000
+MAX_ROUNDS = 100
 
 FingerCount = int
 HandIndex = int
@@ -20,7 +20,7 @@ PlayerState = Tuple[FingerCount, ...]
 class ChopsticksState:
     finger_counts: Tuple[PlayerState, ...] = ()
     next_turn: PlayerIndex = 0
-    num_rounds: int = 0
+    num_turns: int = 0
 
     def __str__(self) -> str:
         return '\n'.join([f'P{i + 1}: {fingers}' for i, fingers in enumerate(self.finger_counts)])
@@ -46,7 +46,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         """
         >>> game = Chopsticks()
         >>> game.get_init_state()
-        ChopsticksState(finger_counts=((1, 1), (1, 1)), next_turn=0, num_rounds=0)
+        ChopsticksState(finger_counts=((1, 1), (1, 1)), next_turn=0, num_turns=0)
         """
         return ChopsticksState(finger_counts=((1,) * self.num_hands,) * self.num_players, next_turn=next_turn)
 
@@ -64,13 +64,14 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         [H1 1 -> H2 P1, H2 1 -> H1 P1, H1 1 -> H1 P2, H2 1 -> H1 P2]
         >>> state = ChopsticksState(((1, 1), (2, 0)), 1)
         >>> list(game.get_actions(state))
-        [H1 1 -> H1 P1, H1 1 -> H2 P1, H1 2 -> H1 P1, H1 2 -> H2 P1, H1 1 -> H2 P2]
+        [H1 2 -> H1 P1, H1 2 -> H2 P1, H1 1 -> H2 P2]
         """
         this_player = state.next_turn
         for to_player in range(self.num_players):
             for from_hand in range(self.num_hands):
                 num_fingers = state.finger_counts[this_player][from_hand]
-                for fingers in range(1, 1 + num_fingers):
+                min_fingers = 1 if to_player == this_player else max(1, num_fingers)
+                for fingers in range(min_fingers, 1 + num_fingers):
                     for to_hand in range(self.num_hands):
                         # Special rules when giving to yourself:
                         # 1. You can't transfer to the same hand (of course).
@@ -100,12 +101,12 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         >>> actions[0], actions[2]
         (H1 1 -> H2 P1, H1 1 -> H1 P2)
         >>> game.updated(state, actions[0])
-        ChopsticksState(finger_counts=((0, 2), (1, 1)), next_turn=1, num_rounds=1)
+        ChopsticksState(finger_counts=((0, 2), (1, 1)), next_turn=1, num_turns=1)
         >>> game.updated(state, actions[2])
-        ChopsticksState(finger_counts=((1, 1), (2, 1)), next_turn=1, num_rounds=1)
+        ChopsticksState(finger_counts=((1, 1), (2, 1)), next_turn=1, num_turns=1)
         >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_turn=1)
         >>> game.updated(state, ChopsticksAction(from_hand=0, to_player=0, to_hand=0, fingers=1))
-        ChopsticksState(finger_counts=((0, 1), (1, 1)), next_turn=0, num_rounds=1)
+        ChopsticksState(finger_counts=((0, 1), (1, 1)), next_turn=0, num_turns=1)
         """
         this_player = state.next_turn
         updated_counts = [list(player_state) for player_state in state.finger_counts]
@@ -117,23 +118,29 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         return ChopsticksState(
             finger_counts=tuple(tuple(player_state) for player_state in updated_counts),
             next_turn=(this_player + 1) % self.num_players,
-            num_rounds=state.num_rounds + 1
+            num_turns=state.num_turns + 1
         )
 
     def get_score_and_game_over(self, state: ChopsticksState) -> Tuple[int, bool]:
         """
         In this game, you only win if you knock everyone else down to all zero fingers.
-        In this case, you must have been the last player to take a turn.
+        Assume the turns happen in player order.
         We also cap the game at 1000 turns.
         >>> game = Chopsticks()
-        >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_turn=1, num_rounds=0)
+        >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_turn=1, num_turns=0)
         >>> game.get_score_and_game_over(state)
         (0, False)
-        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_turn=0, num_rounds=0)
+        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_turn=0, num_turns=0)
         >>> game.get_score_and_game_over(state)
         (1, True)
+        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_turn=1, num_turns=0)
+        >>> game.get_score_and_game_over(state)
+        (-1, True)
         """
-        has_lost = [all(fingers == 0 for fingers in player_state) for player_state in state.finger_counts]
+        has_lost = [all(fingers == 0 for fingers in player_state)
+                    for player_state in state.finger_counts]
+        if has_lost[(state.next_turn - 1) % self.num_players]:
+            return -1, True
         if sum(1 if l else 0 for l in has_lost) == 1:
             return 1, True
-        return 0, state.num_rounds > MAX_ROUNDS
+        return 0, state.num_turns > MAX_ROUNDS * self.num_players
