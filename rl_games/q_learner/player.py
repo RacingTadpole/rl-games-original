@@ -39,6 +39,8 @@ class Player(Generic[State, Action]):
             # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
             random.shuffle(actions)
             max_reward = -1.0
+            if len(actions) == 0:
+                raise IndexError(f'No actions available from {state}')
             best_action = actions[0]
             for action in actions:
                 expected_reward = self.action_value.get((state, action), 0)

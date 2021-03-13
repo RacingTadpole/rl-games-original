@@ -53,12 +53,15 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         >>> state = game.get_init_state()
         >>> len(list(game.get_actions(state)))
         6
+        >>> state = ChopsticksState(((0, 1), (2, 0)), 0)
+        >>> list(game.get_actions(state))
+        [1 from H2 -> P2 H1]
         >>> state = ChopsticksState(((1, 1), (2, 0)), 0)
         >>> list(game.get_actions(state))
         [1 from H1 -> P1 H2, 1 from H1 -> P2 H1, 1 from H2 -> P1 H1, 1 from H2 -> P2 H1]
         >>> state = ChopsticksState(((1, 1), (2, 0)), 1)
         >>> list(game.get_actions(state))
-        [1 from H1 -> P1 H1, 1 from H1 -> P1 H2, 1 from H1 -> P2 H2]
+        [1 from H1 -> P1 H1, 1 from H1 -> P1 H2, 1 from H1 -> P2 H2, 2 from H1 -> P1 H1, 2 from H1 -> P1 H2]
         """
         this_player = state.next_turn
         for from_hand in range(self.num_hands):
@@ -79,11 +82,8 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
                                 continue
                         # Special rules when hitting another player:
                         # 1. You can't hit a 0-finger hand.
-                        # 2. You can't give away all of your fingers.
                         else:
                             if state.finger_counts[to_player][to_hand] == 0:
-                                continue
-                            if fingers == sum(state.finger_counts[this_player]):
                                 continue
 
                         yield ChopsticksAction(from_hand, to_player, to_hand, fingers)
