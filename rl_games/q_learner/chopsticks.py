@@ -22,6 +22,9 @@ class ChopsticksState:
     next_turn: PlayerIndex = 0
     num_rounds: int = 0
 
+    def __str__(self) -> str:
+        return '\n'.join([f'P{i + 1}: {fingers}' for i, fingers in enumerate(self.finger_counts)])
+
 @dataclass(frozen=True, repr=False)
 class ChopsticksAction:
     from_hand: HandIndex

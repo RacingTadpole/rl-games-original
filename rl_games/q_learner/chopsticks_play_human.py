@@ -7,13 +7,19 @@ if __name__ == '__main__':
     from rl_games.q_learner.chopsticks import Chopsticks
     from rl_games.q_learner.play import play_many
 
-    players = [Player('A'), Player('B')]
+    players = [Player('AI 1'), Player('AI 2')]
     game = Chopsticks()
-    play_many(game, players)
-    play_many(game, players)
-    play_many(game, players)
-    play_many(game, players)
-    play_many(game, players)
+
+    play_many(game, players, 2000)
+    for player in players:
+        player.explore_chance = 0.1
+    play_many(game, players, 2000)
+    for player in players:
+        player.explore_chance = 0.05
+    play_many(game, players, 2000)
+    for player in players:
+        player.explore_chance = 0
+
     index = int(input(f'Play as player number {tuple(range(1, 1 + len(players)))}? '))
     players[index - 1] = 'human'
     winner = play_human(game, players)

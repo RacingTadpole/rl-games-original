@@ -21,6 +21,8 @@ class NacState:
     board: Tuple[Tuple[Square, ...], ...] = ()
     next_turn: Marker = x_marker
 
+    def __str__(self):
+        return '\n'.join(''.join(e or '.' for e in row) for row in self.board)
 
 @dataclass
 class Nac(Game[NacState, NacAction]):
