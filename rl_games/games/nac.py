@@ -5,8 +5,7 @@
 import random
 from dataclasses import dataclass, field
 from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar
-from copy import deepcopy
-from .game import Game
+from rl_games.core.game import Game
 
 Marker = Literal['X', 'O']
 Square = Literal['X', 'O', '']

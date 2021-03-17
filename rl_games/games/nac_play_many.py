@@ -1,9 +1,9 @@
 from typing import Sequence
 import random
 
-from .player import Player
-from .play import play_many
-from .nac import Nac
+from rl_games.q_learner.player import Player
+from rl_games.core.play import play_many
+from rl_games.games.nac import Nac
 
 
 def nac_play_many(

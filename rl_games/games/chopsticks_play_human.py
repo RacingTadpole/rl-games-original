@@ -1,22 +1,24 @@
+# pylint: disable=unsubscriptable-object
+
 # Run with:
-#     python -m rl_games.q_learner.nac_play_human
+#     python -m rl_games.q_learner.chopsticks_play_human
 
 if __name__ == '__main__':
+    from typing import Union
     from rl_games.q_learner.player import Player
-    from rl_games.q_learner.play import play_human
-    from rl_games.q_learner.nac import Nac
-    from rl_games.q_learner.play import play_many
+    from rl_games.core.play import play_human, play_many
+    from rl_games.games.chopsticks import Chopsticks, ChopsticksState, ChopsticksAction
 
-    game = Nac()
-    players = [Player('X'), Player('O')]
+    players: list[Player[ChopsticksState, ChopsticksAction]] = [Player('P1'), Player('P2')]
+    game = Chopsticks()
 
-    play_many(game, players, 9000)
+    play_many(game, players, 25000)
     for player in players:
         player.explore_chance = 0.1
-    play_many(game, players, 6000)
+    play_many(game, players, 9000)
     for player in players:
         player.explore_chance = 0.05
-    play_many(game, players, 4000)
+    play_many(game, players, 9000)
     for player in players:
         player.explore_chance = 0
 
@@ -28,10 +30,10 @@ if __name__ == '__main__':
             index = int(index_str)
         except ValueError:
             index = 1
-        players[index - 1] = 'human'
-        winner = play_human(game, players)
+        new_players: list[Union[Player[ChopsticksState, ChopsticksAction], str]] = ['human' if i == index - 1 else p for i, p in enumerate(players)]
+        winner = play_human(game, new_players)
 
-        if winner:
+        if winner is not None:
             if isinstance(winner, str):
                 print(f'Congratulations, the winner was {winner}!')
             else:

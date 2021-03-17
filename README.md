@@ -13,7 +13,7 @@ pipenv shell
 Try your hand against the computer playing noughts and crosses with:
 
 ```
-python -m rl_games.q_learner.nac_play_human
+python -m rl_games.games.nac_play_human
 ```
 
 ## Chopsticks
@@ -21,5 +21,5 @@ python -m rl_games.q_learner.nac_play_human
 Try playing chopsticks with:
 
 ```
-python -m rl_games.q_learner.chopsticks_play_human
+python -m rl_games.games.chopsticks_play_human
 ```
