@@ -29,7 +29,7 @@ def play(
     Plays a multiplayer game to the end, and reports the winner.
     Updates each player.
 
-    >>> from games.countdown import Countdown
+    >>> from rl_games.games.countdown import Countdown
     >>> game = Countdown()
     >>> def nice_action_value(player: Player):
     ...    return player.id, {k: float(f'{v:.4f}') for k, v in player.action_value.items() if v != 0}
@@ -165,7 +165,7 @@ def play_many(
     Returns the fraction won by each player.
     Starting at 20, B can always win.
 
-    >>> from games.countdown import Countdown
+    >>> from rl_games.games.countdown import Countdown
     >>> game = Countdown(start=20)
     >>> random.seed(2)
     >>> a, b = Player('A'), Player('B')
