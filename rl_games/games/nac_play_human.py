@@ -1,13 +1,16 @@
+# pylint: disable=unsubscriptable-object
+
 # Run with:
 #     python -m rl_games.q_learner.nac_play_human
 
 if __name__ == '__main__':
+    from typing import Union
     from rl_games.q_learner.player import Player
     from rl_games.core.play import play_human, play_many
-    from rl_games.games.nac import Nac
+    from rl_games.games.nac import Nac, NacState, NacAction
 
     game = Nac()
-    players = [Player('X'), Player('O')]
+    players: list[Player[NacState, NacAction]] = [Player('X'), Player('O')]
 
     play_many(game, players, 9000)
     for player in players:
@@ -27,8 +30,8 @@ if __name__ == '__main__':
             index = int(index_str)
         except ValueError:
             index = 1
-        players[index - 1] = 'human'
-        winner = play_human(game, players)
+        new_players: list[Union[Player[NacState, NacAction], str]] = ['human' if i == index - 1 else p for i, p in enumerate(players)]
+        winner = play_human(game, new_players)
 
         if winner:
             if isinstance(winner, str):

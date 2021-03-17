@@ -1,12 +1,15 @@
+# pylint: disable=unsubscriptable-object
+
 # Run with:
 #     python -m rl_games.q_learner.chopsticks_play_human
 
 if __name__ == '__main__':
+    from typing import Union
     from rl_games.q_learner.player import Player
     from rl_games.core.play import play_human, play_many
-    from rl_games.games.chopsticks import Chopsticks
+    from rl_games.games.chopsticks import Chopsticks, ChopsticksState, ChopsticksAction
 
-    players = [Player('P1'), Player('P2')]
+    players: list[Player[ChopsticksState, ChopsticksAction]] = [Player('P1'), Player('P2')]
     game = Chopsticks()
 
     play_many(game, players, 25000)
@@ -27,8 +30,8 @@ if __name__ == '__main__':
             index = int(index_str)
         except ValueError:
             index = 1
-        players[index - 1] = 'human'
-        winner = play_human(game, players)
+        new_players: list[Union[Player[ChopsticksState, ChopsticksAction], str]] = ['human' if i == index - 1 else p for i, p in enumerate(players)]
+        winner = play_human(game, new_players)
 
         if winner is not None:
             if isinstance(winner, str):
