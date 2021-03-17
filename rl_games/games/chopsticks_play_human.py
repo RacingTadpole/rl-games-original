@@ -3,9 +3,9 @@
 
 if __name__ == '__main__':
     from rl_games.q_learner.player import Player
-    from rl_games.q_learner.play import play_human
-    from rl_games.q_learner.chopsticks import Chopsticks
-    from rl_games.q_learner.play import play_many
+    from rl_games.core.play import play_human
+    from rl_games.games.chopsticks import Chopsticks
+    from rl_games.games.play import play_many
 
     players = [Player('P1'), Player('P2')]
     game = Chopsticks()

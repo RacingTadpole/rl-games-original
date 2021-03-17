@@ -1,9 +1,9 @@
 from typing import Sequence
 import random
 
-from .player import Player
-from .play import play_many
-from .chopsticks import Chopsticks
+from q_learner.player import Player
+from core.play import play_many
+from games.chopsticks import Chopsticks
 
 
 def chopsticks_play_many(

@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence
 from collections import defaultdict
 
-from .game import State, Action, Game
+from core.game import State, Action, Game
 
 
 @dataclass
@@ -23,7 +23,7 @@ class Player(Generic[State, Action]):
 
     def choose_action(self, game: Game[State, Action], state: State) -> Action:
         """
-        >>> from .countdown import Countdown
+        >>> from games.countdown import Countdown
         >>> random.seed(3)
         >>> game = Countdown()
         >>> player = Player[int, int]('A', explore_chance=0)
@@ -51,7 +51,7 @@ class Player(Generic[State, Action]):
 
     def value(self, game: Game, state: State) -> float:
         """
-        >>> from .countdown import Countdown
+        >>> from games.countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
         >>> player = Player[int, int](action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
@@ -76,7 +76,7 @@ class Player(Generic[State, Action]):
         Note that new_state is the next state in which this player can move again,
         ie. it includes opponent moves.
         We'll imagine the dummy game is a 2-player game.
-        >>> from .countdown import Countdown
+        >>> from games.countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
         >>> player = Player()

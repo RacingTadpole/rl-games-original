@@ -6,7 +6,7 @@ import random
 from dataclasses import dataclass, field
 from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar
 from copy import deepcopy
-from .game import Game
+from core.game import Game
 
 MAX_ROUNDS = 100
 
