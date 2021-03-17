@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Tuple
-from core.game import Game
+from rl_games.core.game import Game
 
 @dataclass
 class Countdown(Game[int, int]):

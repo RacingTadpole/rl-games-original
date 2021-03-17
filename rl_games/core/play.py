@@ -6,7 +6,7 @@ from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequ
 from collections import defaultdict
 
 from .game import State, Action, Game
-from q_learner.player import Player
+from rl_games.q_learner.player import Player
 
 
 @dataclass
