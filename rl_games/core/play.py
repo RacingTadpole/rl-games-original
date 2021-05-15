@@ -23,7 +23,7 @@ class TurnRecord(Generic[State, Action]):
 def play(
     game: Game,
     players: Sequence[Player],
-    verbose = False,
+    verbose: bool = False,
 ) -> Optional[Player]:
     """
     Plays a multiplayer game to the end, and reports the winner.
@@ -114,7 +114,7 @@ def get_human_action(game: Game[State, Action], state: State, player_name: str) 
 def play_human(
     game: Game[State, Action],
     players: Sequence[Union[Player[State, Action], str]],
-    verbose = False,
+    verbose: bool = False,
 ) -> Optional[Union[Player[State, Action], str]]:
     """
     Plays a multiplayer game against a human to the end, and reports the winner.
@@ -158,8 +158,8 @@ def play_human(
 def play_many(
     game: Game,
     players: Sequence[Player],
-    num_rounds = 1000,
-    verbose = False,
+    num_rounds: int = 1000,
+    verbose: bool = False,
 ) -> Dict[str, float]:
     """
     Returns the fraction won by each player.

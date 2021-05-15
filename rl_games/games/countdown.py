@@ -1,7 +1,7 @@
 # pylint: disable=unsubscriptable-object
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Generator
 from rl_games.core.game import Game
 
 @dataclass
@@ -12,7 +12,7 @@ class Countdown(Game[int, int]):
     """
     start: int = 20
 
-    def get_actions(self, state):
+    def get_actions(self, state: int) -> Generator[int, None, None]:
         if state >= 3:
             yield 3
         if state >= 2:
@@ -23,10 +23,10 @@ class Countdown(Game[int, int]):
     def get_init_state(self) -> int:
         return self.start
 
-    def updated(self, state, action):
+    def updated(self, state: int, action: int) -> int:
         return state - action
 
-    def get_score_and_game_over(self, state) -> Tuple[int, bool]:
+    def get_score_and_game_over(self, state: int) -> Tuple[int, bool]:
         """
         In this game, if the state is 0, the last player to take a turn won.
         """

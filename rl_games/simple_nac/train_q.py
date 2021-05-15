@@ -7,7 +7,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List
+from typing import Tuple, Literal, Optional, Iterator, Dict, List, Callable
 from copy import deepcopy
 from collections import defaultdict
 
@@ -53,7 +53,7 @@ class QPlayer(Player):
     action_value: Dict[Tuple[Board, Action], float] = field(default_factory=lambda: defaultdict(float))
     discount_factor: float = 0.9
 
-    def value(self, board: Board, marker: Marker, get_actions=get_actions) -> float:
+    def value(self, board: Board, marker: Marker, get_actions: Callable=get_actions) -> float:
         """
         >>> random.seed(2)
         >>> player = QPlayer(action_value={(1, 'a'): 2, (1, 'b'): 3, (1, 'c'): 7, (2, 'a'): 15})
@@ -98,16 +98,16 @@ class QPlayer(Player):
                     best_action = action
             return best_action
 
-    def print_action_values(self):
+    def print_action_values(self) -> None:
         for (board, action), value in sorted(self.action_value.items()):
             print(f'{board}: {action} = {value:.5f}')
 
-    def print_non_zero_action_values(self):
+    def print_non_zero_action_values(self) -> None:
         for (board, action), value in sorted(self.action_value.items(), key=lambda item: (-item[1], item[0])):
             if value != 0:
                 print(f'{board}: {action} = {value:.5f}')
 
-    def print_values(self, print_zeroes = False):
+    def print_values(self, print_zeroes: bool = False) -> None:
         for board in sorted({k[0]: 1 for k in self.action_value.keys()}.keys()):
             x = self.value(board, x_marker)
             o = self.value(board, o_marker)
@@ -150,7 +150,7 @@ class QPlayer(Player):
 def play_once_q_training(
     player_x: QPlayer,
     player_o: QPlayer,
-    verbose = False,
+    verbose: bool = False,
     restrict_opening: bool = False,
 ) -> Square:
     """
