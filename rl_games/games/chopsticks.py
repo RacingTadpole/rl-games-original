@@ -4,7 +4,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar
+from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar, Generator
 from rl_games.core.game import Game
 
 MAX_ROUNDS = 100
@@ -41,7 +41,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
     num_hands: int = 2
     fingers_per_hand: int = 4
 
-    def get_init_state(self, next_turn=0) -> ChopsticksState:
+    def get_init_state(self, next_turn: int = 0) -> ChopsticksState:
         """
         >>> game = Chopsticks()
         >>> game.get_init_state()
@@ -49,7 +49,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         """
         return ChopsticksState(finger_counts=((1,) * self.num_hands,) * self.num_players, next_turn=next_turn)
 
-    def get_actions(self, state: ChopsticksState):
+    def get_actions(self, state: ChopsticksState) -> Generator[ChopsticksAction, None, None]:
         """
         >>> game = Chopsticks()
         >>> state = game.get_init_state()

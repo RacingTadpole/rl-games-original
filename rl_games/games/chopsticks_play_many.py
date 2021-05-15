@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Dict, Any
 import random
 
 from rl_games.q_learner.player import Player
@@ -8,9 +8,9 @@ from rl_games.games.chopsticks import Chopsticks
 
 def chopsticks_play_many(
     players: Sequence[Player],
-    *args,
-    **kwargs
-):
+    *args: Any,
+    **kwargs: Any
+) -> Dict[str, float]:
     """
     >>> random.seed(2)
     >>> a, b = Player('A'), Player('B')

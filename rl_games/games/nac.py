@@ -4,7 +4,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar
+from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, Generator, TypeVar
 from rl_games.core.game import Game
 
 Marker = Literal['X', 'O']
@@ -47,7 +47,7 @@ class Nac(Game[NacState, NacAction]):
     size: int = 3
     use_symmetry: bool = False
 
-    def get_init_state(self, next_turn=x_marker) -> NacState:
+    def get_init_state(self, next_turn: Marker = x_marker) -> NacState:
         """
         >>> game = Nac()
         >>> game.get_init_state()
@@ -55,7 +55,7 @@ class Nac(Game[NacState, NacAction]):
         """
         return NacState(board=((empty_square,) * self.size,) * self.size, next_turn=next_turn)
 
-    def get_actions(self, state: NacState):
+    def get_actions(self, state: NacState) -> Generator[NacAction, None, None]:
         """
         >>> game = Nac()
         >>> state = game.get_init_state()

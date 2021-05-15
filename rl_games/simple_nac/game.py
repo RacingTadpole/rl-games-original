@@ -5,7 +5,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast
+from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Callable
 from copy import deepcopy
 
 Marker = Literal['X', 'O']
@@ -167,7 +167,7 @@ def play_once_no_training(
     player_x: Player,
     player_o: Player,
     restrict_opening: bool = False,
-    verbose = False
+    verbose: bool = False
 ) -> Square:
     """
     Returns the winner's marker, if any.
@@ -202,8 +202,8 @@ def play_once_no_training(
 def play_many(
     player_x: Player,
     player_o: Player,
-    num_rounds = 1000,
-    play_once = play_once_no_training,
+    num_rounds: int = 1000,
+    play_once: Callable = play_once_no_training,
     restrict_opening: bool = False,
 ) -> Tuple[float, float]:
     """

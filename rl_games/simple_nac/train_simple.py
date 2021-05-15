@@ -102,8 +102,8 @@ class SimplePlayer(Player):
 def play_once_simple_training(
     player_x: SimplePlayer,
     player_o: SimplePlayer,
-    verbose = False,
-    restrict_opening = False,
+    verbose: bool = False,
+    restrict_opening: bool = False,
 ) -> Square:
     """
     Returns the winner's marker, if any.
