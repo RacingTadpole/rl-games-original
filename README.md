@@ -5,6 +5,7 @@
 Install pipenv and type:
 
 ```
+pipenv install
 pipenv shell
 ```
 
