@@ -39,7 +39,8 @@ class NeuralNetwork:
         layer_1 = sigmoid(linear_layer_1)
         linear_layer_2 = np.dot(layer_1, self.weights_12)
         output = linear_layer_2
-        return output
+        # TODO: np.dot can return a non-array.
+        return output  # type: ignore
 
     def _compute_gradients(self, input_vector: np.ndarray, target: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         assert input_vector.shape == (1, self.input_size)
