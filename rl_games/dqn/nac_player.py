@@ -18,9 +18,9 @@ from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequ
 from collections import defaultdict
 
 from rl_games.core.game import State, Action, Game
-from rl_games.neural.neural_network import NeuralNetwork
+from rl_games.core.player import Player
 from rl_games.games.nac import Nac, NacState, NacAction, x_marker, o_marker, empty_square
-
+from rl_games.neural.neural_network import NeuralNetwork
 
 m = {empty_square: 0, x_marker: 1, o_marker: 2}
 
@@ -98,8 +98,7 @@ def get_onehot_index_from_nac_action(game: Nac, action: NacAction) -> int:
 
 
 @dataclass
-class Player(Generic[State, Action]):
-    id: str = field(default_factory=lambda: f'{random.randrange(sys.maxsize)}')
+class DqnPlayer(Player, Generic[State, Action]):
     learning_rate: float = 0.1
     explore_chance: float = 0.1
     discount_factor: float = 0.9

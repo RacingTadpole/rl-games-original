@@ -1,15 +1,16 @@
 # pylint: disable=unsubscriptable-object
 
 # Run with:
-#     python -m rl_games.q_learner.chopsticks_play_human
+#     python -m rl_games.games.chopsticks_play_human
 
 if __name__ == '__main__':
     from typing import Union
-    from rl_games.q_learner.player import Player
+    from rl_games.q_learner.player import QPlayer
+    from rl_games.core.player import Player
     from rl_games.core.play import play_human, play_many
     from rl_games.games.chopsticks import Chopsticks, ChopsticksState, ChopsticksAction
 
-    players: list[Player[ChopsticksState, ChopsticksAction]] = [Player('P1'), Player('P2')]
+    players: list[Player[ChopsticksState, ChopsticksAction]] = [QPlayer('P1'), QPlayer('P2')]
     game = Chopsticks()
 
     play_many(game, players, 25000)
