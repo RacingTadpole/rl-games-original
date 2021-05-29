@@ -80,16 +80,16 @@ def get_onehot_nac_input(state: NacState) -> np.ndarray:
     return get_onehot_vector_from_index(get_nac_state_index(state), size)
 
 
-def get_nac_action_and_value_from_onehot_output(output: np.ndarray, legal_actions: Sequence[NacAction]) -> Tuple[NacAction, float]:
-    size = np.sqrt(len(output))  # Or from game.size
+def get_nac_action_and_value_from_onehot_output(game: Nac, output: np.ndarray, legal_actions: Sequence[NacAction]) -> Tuple[NacAction, float]:
+    size = game.size
     mask_to_clear = np.ones((size, size), dtype=bool)
     for action in legal_actions:
         mask_to_clear[action.row][action.col] = False
     # TODO: output the legal actions as a mask in the first place
     masked_output = output.copy()
-    masked_output[mask_to_clear] = -1
+    masked_output[mask_to_clear.reshape(masked_output.shape)] = -1
     max_index = np.argmax(masked_output)
-    max_value = masked_output.reshape(len(output))[max_index]
+    max_value = masked_output[0][max_index]
     return NacAction(row=max_index // size, col=max_index % size), max_value
 
 
@@ -109,7 +109,7 @@ class Player(Generic[State, Action]):
     hidden_size: int = 18
     num_actions: int = 9
     get_input_vector: Callable[[NacState], np.ndarray] = get_onehot_nac_input  # TODO: [State]
-    get_action_and_value_from_output: Callable[[np.ndarray, Sequence[NacAction]], Tuple[NacAction, float]] = get_nac_action_and_value_from_onehot_output  # TODO: [Action]
+    get_action_and_value_from_output: Callable[[Nac, np.ndarray, Sequence[NacAction]], Tuple[NacAction, float]] = get_nac_action_and_value_from_onehot_output  # TODO: [Action]
     get_onehot_index_from_action: Callable[[Nac, NacAction], int] = get_onehot_index_from_nac_action  # TODO: [Action, Game]
 
     def __post_init__(self, *args: Any, **kwargs: Any) -> None:
@@ -138,7 +138,7 @@ class Player(Generic[State, Action]):
         if len(actions) == 0:
             raise IndexError(f'No actions available from {state}')
         model_output = self.model.predict(self.get_input_vector(state))
-        return self.get_action_and_value_from_output(model_output, actions)[0]
+        return self.get_action_and_value_from_output(game, model_output, actions)[0]
 
     def value(self, game: Game, state: State) -> float:
         """
@@ -152,7 +152,7 @@ class Player(Generic[State, Action]):
         actions = list(game.get_actions(state))
         if len(actions):
             model_output = self.model.predict(self.get_input_vector(state))
-            return self.get_action_and_value_from_output(model_output, actions)[1]
+            return self.get_action_and_value_from_output(game, model_output, actions)[1]
         # If no actions are possible, the game must be over, and the value is 0.
         return 0
 
@@ -179,5 +179,5 @@ class Player(Generic[State, Action]):
         target = reward + self.discount_factor * np.max(
             self.model.predict(self.get_input_vector(new_state)))
         target_vector = self.model.predict(self.get_input_vector(old_state))
-        target_vector[self.get_onehot_index_from_action(action)] = target
+        target_vector[0][self.get_onehot_index_from_action(game, action)] = target
         self.model.train([self.get_input_vector(old_state)], [target_vector], num_iterations=1)
