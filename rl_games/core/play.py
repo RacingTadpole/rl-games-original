@@ -30,12 +30,13 @@ def play(
     Updates each player.
 
     >>> from rl_games.games.countdown import Countdown
+    >>> from rl_games.q_learner.player import QPlayer
     >>> game = Countdown()
     >>> def nice_action_value(player: Player):
     ...    return player.id, {k: float(f'{v:.4f}') for k, v in player.action_value.items() if v != 0}
 
     1 player
-    >>> players = [Player('A')]
+    >>> players = [QPlayer('A')]
     >>> random.seed(2)
     >>> nice_action_value(play(game, players))
     ('A', {(2, 2): 1.0})
@@ -45,7 +46,7 @@ def play(
     ('A', {(2, 2): 1.9, (3, 3): 1.0, (5, 3): 0.09})
 
     3 players
-    >>> players = Player('A'), Player('B'), Player('C')
+    >>> players = QPlayer('A'), QPlayer('B'), QPlayer('C')
     >>> random.seed(2)
     >>> play(game, players).id
     'C'
@@ -107,16 +108,17 @@ def play_many(
     Starting at 20, B can always win.
 
     >>> from rl_games.games.countdown import Countdown
+    >>> from rl_games.q_learner.player import QPlayer
     >>> game = Countdown(start=20)
     >>> random.seed(2)
-    >>> a, b = Player('A'), Player('B')
+    >>> a, b = QPlayer('A'), QPlayer('B')
     >>> play_many(game, [a, b])
     {'A': 0.243, 'B': 0.757}
 
     If we had started at 21, then A can always win.
     >>> game = Countdown(start=21)
     >>> random.seed(2)
-    >>> a, b = Player('A'), Player('B')
+    >>> a, b = QPlayer('A'), QPlayer('B')
     >>> play_many(game, [a, b])
     {'A': 0.693, 'B': 0.307}
     """

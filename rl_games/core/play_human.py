@@ -29,7 +29,8 @@ def play_human(
     """
     Plays a multiplayer game against a human to the end, and reports the winner.
     Pass a string representing the name of the player for any human players.
-    Does not update the players.
+    You should preset the players to have no chance of exploring.
+    Does not further train the players.
     """
     state = game.get_init_state()
     game_over = False
@@ -66,7 +67,7 @@ def play_human(
     return None
 
 
-def play_human_ui(game: Game[State, Action], trained_players: Sequence[Player[State, Action]]):
+def play_human_ui(game: Game[State, Action], trained_players: Sequence[Player[State, Action]]) -> None:
     """
     Play an interactive game with the human.
     """

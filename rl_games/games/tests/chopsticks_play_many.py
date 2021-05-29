@@ -12,8 +12,9 @@ def chopsticks_play_many(
     **kwargs: Any
 ) -> Dict[str, float]:
     """
+    >>> from rl_games.q_learner.player import QPlayer
     >>> random.seed(2)
-    >>> a, b = Player('A'), Player('B')
+    >>> a, b = QPlayer('A'), QPlayer('B')
     >>> chopsticks_play_many([a, b])
     {'B': 0.514, 'A': 0.486}
     """
