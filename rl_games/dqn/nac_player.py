@@ -98,24 +98,28 @@ def get_onehot_index_from_nac_action(game: Nac, action: NacAction) -> int:
 
 
 @dataclass
-class DqnPlayer(Player, Generic[State, Action]):
-    learning_rate: float = 0.1
-    explore_chance: float = 0.1
-    discount_factor: float = 0.9
-
+class DqnModelInterface(Generic[State, Action]):
     # These defaults are for NAC
     num_states: int = 3 ** 9 * 2
     hidden_size: int = 18
     num_actions: int = 9
-    get_input_vector: Callable[[NacState], np.ndarray] = get_onehot_nac_input  # TODO: [State]
-    get_action_and_value_from_output: Callable[[Nac, np.ndarray, Sequence[NacAction]], Tuple[NacAction, float]] = get_nac_action_and_value_from_onehot_output  # TODO: [Action]
-    get_onehot_index_from_action: Callable[[Nac, NacAction], int] = get_onehot_index_from_nac_action  # TODO: [Action, Game]
+    get_input_vector: Callable[[State], np.ndarray] = get_onehot_nac_input
+    get_action_and_value_from_output: Callable[[Game[State, Action], np.ndarray, Sequence[Action]], Tuple[Action, float]] = get_nac_action_and_value_from_onehot_output
+    get_onehot_index_from_action: Callable[[Game[State, Action], Action], int] = get_onehot_index_from_nac_action
+
+
+@dataclass
+class DqnPlayer(Player, Generic[State, Action]):
+    learning_rate: float = 0.1
+    explore_chance: float = 0.1
+    discount_factor: float = 0.9
+    model_interface: DqnModelInterface = DqnModelInterface()
 
     def __post_init__(self, *args: Any, **kwargs: Any) -> None:
         self.model = NeuralNetwork(
-            input_size=self.num_states,
-            hidden_size=self.hidden_size,
-            output_size=self.num_actions
+            input_size=self.model_interface.num_states,
+            hidden_size=self.model_interface.hidden_size,
+            output_size=self.model_interface.num_actions
         )
 
     def choose_action(self, game: Game[State, Action], state: State) -> Action:
@@ -136,8 +140,8 @@ class DqnPlayer(Player, Generic[State, Action]):
         random.shuffle(actions)
         if len(actions) == 0:
             raise IndexError(f'No actions available from {state}')
-        model_output = self.model.predict(self.get_input_vector(state))
-        return self.get_action_and_value_from_output(game, model_output, actions)[0]
+        model_output = self.model.predict(self.model_interface.get_input_vector(state))
+        return self.model_interface.get_action_and_value_from_output(game, model_output, actions)[0]
 
     def value(self, game: Game, state: State) -> float:
         """
@@ -150,8 +154,8 @@ class DqnPlayer(Player, Generic[State, Action]):
         """
         actions = list(game.get_actions(state))
         if len(actions):
-            model_output = self.model.predict(self.get_input_vector(state))
-            return self.get_action_and_value_from_output(game, model_output, actions)[1]
+            model_output = self.model.predict(self.model_interface.get_input_vector(state))
+            return self.model_interface.get_action_and_value_from_output(game, model_output, actions)[1]
         # If no actions are possible, the game must be over, and the value is 0.
         return 0
 
@@ -177,7 +181,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> player.update_action_value(game, empty, True, 2, 0)
         """
         target = reward + self.discount_factor * np.max(
-            self.model.predict(self.get_input_vector(new_state)))
-        target_vector = self.model.predict(self.get_input_vector(old_state))
-        target_vector[0][self.get_onehot_index_from_action(game, action)] = target
-        self.model.train([self.get_input_vector(old_state)], [target_vector], num_iterations=1)
+            self.model.predict(self.model_interface.get_input_vector(new_state)))
+        target_vector = self.model.predict(self.model_interface.get_input_vector(old_state))
+        target_vector[0][self.model_interface.get_onehot_index_from_action(game, action)] = target
+        self.model.train([self.model_interface.get_input_vector(old_state)], [target_vector], num_iterations=1)
