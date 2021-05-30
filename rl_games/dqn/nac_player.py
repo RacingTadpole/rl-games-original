@@ -13,7 +13,7 @@
 import sys
 import random
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence, Any, Callable
 from collections import defaultdict
 
@@ -56,8 +56,10 @@ class DqnPlayer(Player, Generic[State, Action]):
         random.shuffle(actions)
         if len(actions) == 0:
             raise IndexError(f'No actions available from {state}')
-        model_output = self.model.predict(self.dqn.get_input_vector(state))
-        return self.dqn.get_action_and_value_from_output(game, model_output, actions)[0]
+        model_input = self.dqn.get_input_vector(state)
+        model_output = self.model.predict(model_input)
+        action, _ = self.dqn.get_action_and_value_from_output(game, model_output, actions)
+        return action
 
     def value(self, game: Game, state: State) -> float:
         """
