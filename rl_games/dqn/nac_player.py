@@ -99,20 +99,29 @@ def get_onehot_index_from_nac_action(game: Nac, action: NacAction) -> int:
 
 @dataclass
 class DqnModelInterface(Generic[State, Action]):
-    # These defaults are for NAC
+    num_states: int
+    hidden_size: int
+    num_actions: int
+    get_input_vector: Callable[[State], np.ndarray]
+    get_action_and_value_from_output: Callable[[Game[State, Action], np.ndarray, Sequence[Action]], Tuple[Action, float]]
+    get_onehot_index_from_action: Callable[[Game[State, Action], Action], int]
+
+
+@dataclass
+class NacDqnModelInterface(DqnModelInterface[NacState, NacAction]):
     num_states: int = 3 ** 9 * 2
     hidden_size: int = 18
     num_actions: int = 9
-    get_input_vector: Callable[[State], np.ndarray] = get_onehot_nac_input
-    get_action_and_value_from_output: Callable[[Game[State, Action], np.ndarray, Sequence[Action]], Tuple[Action, float]] = get_nac_action_and_value_from_onehot_output
-    get_onehot_index_from_action: Callable[[Game[State, Action], Action], int] = get_onehot_index_from_nac_action
+    get_input_vector: Callable[[NacState], np.ndarray] = get_onehot_nac_input
+    get_action_and_value_from_output: Callable[[Game[NacState, NacAction], np.ndarray, Sequence[NacAction]], Tuple[NacAction, float]] = get_nac_action_and_value_from_onehot_output
+    get_onehot_index_from_action: Callable[[Game[NacState, NacAction], NacAction], int] = get_onehot_index_from_nac_action
 
 
 @dataclass
 class DqnPlayer(Player, Generic[State, Action]):
     explore_chance: float = 0.1
     discount_factor: float = 0.9
-    model_interface: DqnModelInterface = DqnModelInterface()
+    model_interface: DqnModelInterface = NacDqnModelInterface()  # TODO: can't default to Nac
 
     def __post_init__(self, *args: Any, **kwargs: Any) -> None:
         self.model = NeuralNetwork(
