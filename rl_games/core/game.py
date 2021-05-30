@@ -9,7 +9,7 @@ from copy import deepcopy
 State = TypeVar('State')
 Action = TypeVar('Action')
 
-class Game(ABC, Generic[State, Action]):
+class Game(Generic[State, Action]):
     @abstractmethod
     def get_actions(self, state: State) -> Iterator[Action]:
         pass

@@ -8,12 +8,13 @@ from rl_games.core.player import Player
 from rl_games.core.game import Game
 from rl_games.games.nac import Nac
 from rl_games.games.nac import Nac, NacState, NacAction
+from rl_games.dqn.nac_setup import NacDqnSetup
 
 
 def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:
     game = Nac()
 
-    players = [DqnPlayer[NacState, NacAction]('X'), DqnPlayer[NacState, NacAction]('O')]
+    players = [DqnPlayer[NacState, NacAction]('X', NacDqnSetup()), DqnPlayer[NacState, NacAction]('O', NacDqnSetup())]
 
     play_many(game, players, 250)
     for player in players:

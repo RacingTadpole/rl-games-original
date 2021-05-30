@@ -15,7 +15,7 @@ from .game import State, Action, Game
 # Ideally an abstract base class, but that is incompatible with dataclass implementation.
 @dataclass
 class Player(Generic[State, Action]):
-    id: str = field(default_factory=lambda: f'{random.randrange(sys.maxsize)}')
+    id: str
 
     def choose_action(self, game: Game[State, Action], state: State) -> Action:
         pass

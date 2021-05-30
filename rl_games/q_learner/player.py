@@ -53,7 +53,7 @@ class QPlayer(Player, Generic[State, Action]):
         >>> from rl_games.games.countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
-        >>> player = QPlayer[int, int](action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
+        >>> player = QPlayer[int, int]('A', action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
         >>> player.value(game, 1), player.value(game, 2), player.value(game, 3)
         (1, 0, 2)
         """
@@ -78,7 +78,7 @@ class QPlayer(Player, Generic[State, Action]):
         >>> from rl_games.games.countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
-        >>> player = QPlayer()
+        >>> player = QPlayer('A')
         >>> player.update_action_value(game, 4, True, 6, 1)
         >>> player.update_action_value(game, 2, True, 4, 0)
         >>> player.update_action_value(game, 0, True, 2, 0)
