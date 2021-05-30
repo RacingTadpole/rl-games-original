@@ -120,12 +120,12 @@ class DqnPlayer(Player, Generic[State, Action]):
 
     def choose_action(self, game: Game[State, Action], state: State) -> Action:
         """
-        >>> from rl_games.games.countdown import Countdown
-        >>> random.seed(3)
-        >>> game = Countdown()
-        >>> player = Player[int, int]('A', explore_chance=0)
-        >>> player.choose_action(game, 5), player.choose_action(game, 5)
-        (2, 3)
+        A player is initialized with a randomly weighted model, so choose a first action for 5 different players.
+        >>> from rl_games.games.nac import Nac, NacState, NacAction
+        >>> random.seed(3); np.random.seed(3)
+        >>> game = Nac()
+        >>> [DqnPlayer[NacState, NacAction](explore_chance=0).choose_action(game, game.get_init_state()) for _ in range(5)]
+        [(0, 2), (0, 0), (2, 2), (0, 1), (1, 2)]
         """
         actions = list(game.get_actions(state))
         if random.uniform(0, 1) <= self.explore_chance:
@@ -141,12 +141,12 @@ class DqnPlayer(Player, Generic[State, Action]):
 
     def value(self, game: Game, state: State) -> float:
         """
-        >>> from rl_games.games.countdown import Countdown
-        >>> random.seed(2)
-        >>> game = Countdown()
-        >>> player = Player[int, int]() # action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
-        >>> player.value(game, 1), player.value(game, 2), player.value(game, 3)
-        (1, 1, 1)
+        >>> from rl_games.games.nac import Nac, NacState, NacAction
+        >>> random.seed(3); np.random.seed(3)
+        >>> game = Nac()
+        >>> player = DqnPlayer[NacState, NacAction]()
+        >>> f'{player.value(game, game.get_init_state()):.4}'
+        '2.742'
         """
         actions = list(game.get_actions(state))
         if len(actions):
@@ -167,13 +167,14 @@ class DqnPlayer(Player, Generic[State, Action]):
         Note that new_state is the next state in which this player can move again,
         ie. it includes opponent moves.
         We'll imagine the dummy game is a 2-player game.
-        >>> from rl_games.games.countdown import Countdown
-        >>> random.seed(2)
-        >>> game = Countdown()
-        >>> player = Player()
+        >>> from rl_games.games.nac import Nac, NacState, NacAction
+        >>> random.seed(3); np.random.seed(3)
+        >>> game = Nac()
+        >>> player = DqnPlayer()
+        >>> empty = game.get_init_state()
         >>> player.update_action_value(game, 4, True, 6, 1)
         >>> player.update_action_value(game, 2, True, 4, 0)
-        >>> player.update_action_value(game, 0, True, 2, 0)
+        >>> player.update_action_value(game, empty, True, 2, 0)
         """
         target = reward + self.discount_factor * np.max(
             self.model.predict(self.get_input_vector(new_state)))
