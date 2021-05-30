@@ -10,7 +10,7 @@ from rl_games.core.player import Player
 from rl_games.games.nac import Nac, NacState, NacAction, x_marker, o_marker, empty_square
 from rl_games.neural.neural_network import NeuralNetwork
 from rl_games.dqn.onehot import get_onehot_vector_from_index
-from rl_games.dqn.setup import DqnSetup
+from rl_games.dqn.setup import DqnSetup, StateToVector, OutputToActionAndValue, ActionToIndex
 
 
 m = {empty_square: 0, x_marker: 1, o_marker: 2}
@@ -81,8 +81,8 @@ class NacDqnSetup(DqnSetup[NacState, NacAction]):
     num_states: int = 3 ** 9 * 2
     hidden_size: int = 18
     num_actions: int = 9
-    get_input_vector: Callable[[NacState], np.ndarray] = get_onehot_nac_input
-    get_action_and_value_from_output: Callable[[Nac, np.ndarray, Sequence[NacAction]], Tuple[NacAction, float]] = get_nac_action_and_value_from_onehot_output
-    get_onehot_index_from_action: Callable[[Nac, NacAction], int] = get_onehot_index_from_nac_action
+    get_input_vector: StateToVector = get_onehot_nac_input
+    get_action_and_value_from_output: OutputToActionAndValue = get_nac_action_and_value_from_onehot_output
+    get_onehot_index_from_action: ActionToIndex = get_onehot_index_from_nac_action
 
 
