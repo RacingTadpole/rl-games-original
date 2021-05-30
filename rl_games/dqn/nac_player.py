@@ -110,7 +110,6 @@ class DqnModelInterface(Generic[State, Action]):
 
 @dataclass
 class DqnPlayer(Player, Generic[State, Action]):
-    learning_rate: float = 0.1
     explore_chance: float = 0.1
     discount_factor: float = 0.9
     model_interface: DqnModelInterface = DqnModelInterface()
