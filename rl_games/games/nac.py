@@ -50,7 +50,8 @@ class Nac(Game[NacState, NacAction]):
         >>> game.get_init_state()
         NacState(board=(('', '', ''), ('', '', ''), ('', '', '')), next_turn='X')
         """
-        return NacState(board=((empty_square,) * self.size,) * self.size, next_turn=next_turn)
+        board = tuple(tuple(empty_square for _ in range(self.size)) for _ in range(self.size))
+        return NacState(board=board, next_turn=next_turn)
 
     def get_actions(self, state: NacState) -> Generator[NacAction, None, None]:
         """

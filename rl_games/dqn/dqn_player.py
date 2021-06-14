@@ -42,18 +42,19 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> [DqnPlayer('A', NacDqnSetup(), explore_chance=0).choose_action(game, game.get_init_state()) for _ in range(5)]
         [(0, 2), (0, 0), (2, 2), (0, 1), (1, 2)]
         """
-        actions = list(game.get_actions(state))
+        action_mask = self.dqn.get_action_mask(game, state)
+        if np.all(action_mask):
+            raise IndexError(f'No actions available from {state}')
         if random.uniform(0, 1) <= self.explore_chance:
             # Explore
+            actions = list(game.get_actions(state))
             return random.choice(actions)
         # Greedy action - choose action with greatest expected value
         # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-        random.shuffle(actions)
-        if len(actions) == 0:
-            raise IndexError(f'No actions available from {state}')
         model_input = self.dqn.get_input_vector(state)
         model_output = self.model.predict(model_input)
-        action, _ = self.dqn.get_action_and_value_from_output(game, model_output, actions)
+        action, _ = self.dqn.get_action_and_value_from_output(game, model_output, action_mask)
+        # TODO: fix this type ignore
         return action  # type: ignore
 
     def value(self, game: Game, state: State) -> float:
@@ -66,10 +67,10 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> f'{player.value(game, game.get_init_state()):.4}'
         '2.742'
         """
-        actions = list(game.get_actions(state))
-        if len(actions) > 0:
+        action_mask = self.dqn.get_action_mask(game, state)
+        if not np.all(action_mask):
             model_output = self.model.predict(self.dqn.get_input_vector(state))
-            return self.dqn.get_action_and_value_from_output(game, model_output, actions)[1]
+            return self.dqn.get_action_and_value_from_output(game, model_output, action_mask)[1]
         # If no actions are possible, the game must be over, and the value is 0.
         return 0
 
