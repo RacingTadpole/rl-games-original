@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Sequence, Generic, Any
+from typing import Tuple, Generic, Any
 from typing_extensions import Protocol
 import numpy as np
 

@@ -36,7 +36,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         """
         A player is initialized with a randomly weighted model, so choose a first action for 5 different players.
         >>> from rl_games.games.nac import Nac, NacState, NacAction
-        >>> from ..games.dqn.nac import NacDqnSetup
+        >>> from rl_games.games.dqn.nac import NacDqnSetup
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
         >>> [DqnPlayer('A', NacDqnSetup(), explore_chance=0).choose_action(game, game.get_init_state()) for _ in range(5)]

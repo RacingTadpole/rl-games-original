@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Sequence
+from typing import Tuple
 import numpy as np
 
 from rl_games.games.nac import Nac, NacState, NacAction, x_marker, o_marker, empty_square
@@ -7,7 +7,6 @@ from rl_games.dqn.onehot import get_onehot_vector_from_index
 from rl_games.dqn.setup import (
     DqnSetup, StateToVector, GameAndStateToActionMask, OutputToActionAndValue, ActionToIndex
 )
-
 
 m = {empty_square: 0, x_marker: 1, o_marker: 2}
 
@@ -81,14 +80,14 @@ def get_nac_action_and_value_from_onehot_output(
     """
     >>> game = Nac(size = 3)
     >>> mask = np.array([[False,  True, False], [False, False, False], [False, False, False]])
-    >>> output = np.array([[1.1, 20, 3], [4, 5, 6], [7, 8, 6.5]])
+    >>> output = np.array([[1.1, 20, 3], [4, 5, 6], [7, 8, 6.5]]).reshape([1, 9])
     >>> get_nac_action_and_value_from_onehot_output(game, output, mask)
     ((2, 1), 8.0)
 
     In the above, the max is 20 at (0, 1), but this position is excluded by the mask.
     """
     size = game.size
-    masked_output = np.ma.array(output, mask=action_mask, fill_value=-np.inf, dtype=np.float16)
+    masked_output = np.ma.array(output.reshape([size, size]), mask=action_mask, fill_value=-np.inf, dtype=np.float16)
     max_flattened_index = np.ma.argmax(masked_output)
     # TODO: extract this conversion into another function too.
     row = int(max_flattened_index // size)
