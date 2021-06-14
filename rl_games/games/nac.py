@@ -1,10 +1,7 @@
-# pylint: disable=unsubscriptable-object
-
 # Noughts and crosses
 
-import random
-from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, Generator, TypeVar
+from dataclasses import dataclass
+from typing import Tuple, Literal, Optional, cast, Generator
 from rl_games.core.game import Game
 
 Marker = Literal['X', 'O']
@@ -89,6 +86,7 @@ class Nac(Game[NacState, NacAction]):
         >>> game.updated(state, NacAction(0, 1))
         NacState(board=(('X', 'X', 'O'), ('X', 'O', 'O'), ('', '', 'X')), next_turn='O')
         """
+        # pylint: disable=no-self-use
         new_board = [list(row) for row in state.board]
         new_board[action.row][action.col] = state.next_turn
         return NacState(

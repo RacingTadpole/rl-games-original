@@ -1,7 +1,5 @@
 from typing import Union, Sequence, Optional
-from rl_games.q_learner.player import QPlayer
 from .player import Player
-from .play import play_many
 from .game import Game, State, Action
 
 def get_human_action(game: Game[State, Action], state: State, player_name: str) -> Action:
@@ -14,7 +12,7 @@ def get_human_action(game: Game[State, Action], state: State, player_name: str) 
         choice_str = input('Please choose a number: ')
         try:
             choice = int(choice_str)
-        except:
+        except (ValueError,):
             choice = 1
     return actions[choice - 1]
 
@@ -22,7 +20,6 @@ def get_human_action(game: Game[State, Action], state: State, player_name: str) 
 def play_human(
     game: Game[State, Action],
     players: Sequence[Union[Player[State, Action], str]],
-    verbose: bool = False,
 ) -> Optional[Union[Player[State, Action], str]]:
     """
     Plays a multiplayer game against a human to the end, and reports the winner.
@@ -32,6 +29,7 @@ def play_human(
     """
     state = game.get_init_state()
     game_over = False
+    player: Optional[Union[Player[State, Action], str]] = None
     while not game_over:
         for player in players:
             print()
@@ -65,7 +63,10 @@ def play_human(
     return None
 
 
-def play_human_ui(game: Game[State, Action], trained_players: Sequence[Player[State, Action]]) -> None:
+def play_human_ui(
+    game: Game[State, Action],
+    trained_players: Sequence[Player[State, Action]],
+) -> None:
     """
     Play an interactive game with the human.
     """
@@ -77,7 +78,8 @@ def play_human_ui(game: Game[State, Action], trained_players: Sequence[Player[St
             index = int(index_str)
         except ValueError:
             index = 1
-        new_players: list[Union[Player[State, Action], str]] = ['human' if i == index - 1 else p for i, p in enumerate(trained_players)]
+        new_players: list[Union[Player[State, Action], str]] = [
+            'human' if i == index - 1 else p for i, p in enumerate(trained_players)]
         winner = play_human(game, new_players)
 
         if winner:

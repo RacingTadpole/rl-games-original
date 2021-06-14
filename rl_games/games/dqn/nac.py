@@ -1,14 +1,8 @@
-import sys
-import random
+from dataclasses import dataclass
+from typing import Tuple, Sequence
 import numpy as np
-from dataclasses import dataclass, field
-from typing import Tuple, Sequence, Callable
-from collections import defaultdict
 
-from rl_games.core.game import State, Action, Game
-from rl_games.core.player import Player
 from rl_games.games.nac import Nac, NacState, NacAction, x_marker, o_marker, empty_square
-from rl_games.neural.neural_network import NeuralNetwork
 from rl_games.dqn.onehot import get_onehot_vector_from_index
 from rl_games.dqn.setup import DqnSetup, StateToVector, OutputToActionAndValue, ActionToIndex
 
@@ -24,7 +18,7 @@ def get_nac_state_index(state: NacState) -> int:
         m(r, c) = 0 if empty, or 1, 2 for players
         i(r, c) = r * size + c
     Then, if 'o' is next player, add 3 ^ size^2
-    
+
     >>> board = [[empty_square,] * 3,] * 3
     >>> board
     [['', '', ''], ['', '', ''], ['', '', '']]
@@ -59,7 +53,11 @@ def get_onehot_nac_input(state: NacState) -> np.ndarray:
     return get_onehot_vector_from_index(get_nac_state_index(state), size)
 
 
-def get_nac_action_and_value_from_onehot_output(game: Nac, output: np.ndarray, legal_actions: Sequence[NacAction]) -> Tuple[NacAction, float]:
+def get_nac_action_and_value_from_onehot_output(
+    game: Nac,
+    output: np.ndarray,
+    legal_actions: Sequence[NacAction],
+) -> Tuple[NacAction, float]:
     size = game.size
     mask_to_clear = np.ones((size, size), dtype=bool)
     for action in legal_actions:
@@ -84,5 +82,3 @@ class NacDqnSetup(DqnSetup[NacState, NacAction]):
     get_input_vector: StateToVector = get_onehot_nac_input
     get_action_and_value_from_output: OutputToActionAndValue = get_nac_action_and_value_from_onehot_output
     get_onehot_index_from_action: ActionToIndex = get_onehot_index_from_nac_action
-
-

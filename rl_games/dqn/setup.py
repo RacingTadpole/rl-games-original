@@ -1,20 +1,25 @@
-import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, Sequence, Callable, Generic, Any
+from typing import Tuple, Sequence, Generic, Any
 from typing_extensions import Protocol
-from rl_games.core.game import State, Action, Game
+import numpy as np
+
+from rl_games.core.game import State, Action
+
 
 class StateToVector(Protocol):
+    # pylint: disable=too-few-public-methods, invalid-name
     @staticmethod
     def __call__(__state: Any) -> np.ndarray: ...
 
 
 class OutputToActionAndValue(Protocol):
+    # pylint: disable=too-few-public-methods, invalid-name
     @staticmethod
     def __call__(__game: Any, __output: np.ndarray, __actions: Sequence[Any]) -> Tuple[Any, float]: ...
 
 
 class ActionToIndex(Protocol):
+    # pylint: disable=too-few-public-methods, invalid-name
     @staticmethod
     def __call__(__game: Any, __action: Any) -> int: ...
 

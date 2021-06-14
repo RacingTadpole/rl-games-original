@@ -2,21 +2,18 @@
 # The game and player definitions.
 
 import random
-from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Callable
-from copy import deepcopy
+from dataclasses import dataclass
+from typing import Optional, Tuple, Literal, Iterator, Sequence, cast, Callable
+from rl_games.games.nac import x_marker, o_marker, empty_square, Marker, Square
 
-Marker = Literal['X', 'O']
-Square = Literal['X', 'O', '']
 
-x_marker, o_marker = cast(Marker, 'X'), cast(Marker, 'O')
-
-size = 3
+BOARD_SIZE = 3
 
 Row = Tuple[Square, Square, Square]
 Board = Tuple[Row, Row, Row]
 
 Action = Tuple[Literal[0, 1, 2], Literal[0, 1, 2], Marker]
+
 
 def get_actions(board: Board, marker: Marker, restrict_opening: bool = False) -> Iterator[Action]:
     """
@@ -34,8 +31,8 @@ def get_actions(board: Board, marker: Marker, restrict_opening: bool = False) ->
             for r, c in [(0, 0), (1, 0), (1, 1)]:
                 yield cast(Action, (r, c, marker))
         else:
-            for r in range(size):
-                for c in range(size):
+            for r in range(BOARD_SIZE):
+                for c in range(BOARD_SIZE):
                     if board[r][c] == '':
                         yield cast(Action, (r, c, marker))
 
@@ -46,6 +43,7 @@ class Player:
     base_value: float = 0
 
     def value(self, board: Board, marker: Marker) -> float:
+        # pylint: disable=unused-argument
         # Subclass Player to improve this.
         return self.base_value
 
@@ -66,18 +64,17 @@ class Player:
         if random.uniform(0, 1) <= self.explore_chance:
             # Explore
             return random.choice(actions)
-        else:
-            # Greedy action - choose action with greatest expected value
-            # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-            random.shuffle(actions)
-            max_reward = -1.0
-            best_action = actions[0]
-            for action in actions:
-                expected_reward = self.value(get_updated_board(board, action), marker)
-                if expected_reward > max_reward:
-                    max_reward = expected_reward
-                    best_action = action
-            return best_action
+        # Greedy action - choose action with greatest expected value
+        # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
+        random.shuffle(actions)
+        max_reward = -1.0
+        best_action = actions[0]
+        for action in actions:
+            expected_reward = self.value(get_updated_board(board, action), marker)
+            if expected_reward > max_reward:
+                max_reward = expected_reward
+                best_action = action
+        return best_action
 
 
 def get_valid_next_markers(board: Board) -> Sequence[Marker]:
@@ -90,8 +87,8 @@ def get_valid_next_markers(board: Board) -> Sequence[Marker]:
     ()
     """
     count = {x_marker: 0, o_marker: 0}
-    for r in range(size):
-        for c in range(size):
+    for r in range(BOARD_SIZE):
+        for c in range(BOARD_SIZE):
             contents = board[r][c]
             if contents != '':
                 count[contents] += 1
@@ -102,6 +99,7 @@ def get_valid_next_markers(board: Board) -> Sequence[Marker]:
     if count[x_marker] == count[o_marker]:
         return (x_marker, o_marker)
     return ()
+
 
 def get_updated_board(board: Board, action: Action) -> Board:
     """
@@ -115,12 +113,14 @@ def get_updated_board(board: Board, action: Action) -> Board:
     new_board[action[0]][action[1]] = marker
     return cast(Board, tuple(tuple(row) for row in new_board))
 
+
 def get_init_board() -> Board:
     """
     >>> get_init_board()
     (('', '', ''), ('', '', ''), ('', '', ''))
     """
-    return cast(Board, (('',) * size,) * size)
+    return cast(Board, (('',) * BOARD_SIZE,) * BOARD_SIZE)
+
 
 def is_winner(b: Board, m: Marker) -> bool:
     """
@@ -130,10 +130,10 @@ def is_winner(b: Board, m: Marker) -> bool:
     True
     """
     return \
-        any(all(b[r][c] == m for c in range(size)) for r in range(size)) or \
-        any(all(b[r][c] == m for r in range(size)) for c in range(size)) or \
-        all(b[d][d] == m for d in range(size)) or \
-        all(b[d][size - 1 - d] == m for d in range(size))
+        any(all(b[r][c] == m for c in range(BOARD_SIZE)) for r in range(BOARD_SIZE)) or \
+        any(all(b[r][c] == m for r in range(BOARD_SIZE)) for c in range(BOARD_SIZE)) or \
+        all(b[d][d] == m for d in range(BOARD_SIZE)) or \
+        all(b[d][BOARD_SIZE - 1 - d] == m for d in range(BOARD_SIZE))
 
 def get_other_marker(marker: Marker) -> Marker:
     """
@@ -161,6 +161,7 @@ def is_game_over(board: Board, marker: Marker) -> Tuple[bool, int]:
         return True, -1
     return all(cell for row in board for cell in row), 0
 
+
 def play_once_no_training(
     player_x: Player,
     player_o: Player,
@@ -179,6 +180,7 @@ def play_once_no_training(
     players = {x_marker: player_x, o_marker: player_o}
     score = 0
     game_over = False
+    marker: Optional[Marker] = None
     while not game_over:
         for marker, player in players.items():
             marker = cast(Marker, marker)
@@ -190,12 +192,14 @@ def play_once_no_training(
             if game_over:
                 break
 
-    marker = cast(Marker, marker)
+    if marker is None:
+        return empty_square
     if score > 0:
         return marker
     if score < 0:
         return get_other_marker(marker)
-    return ''
+    return empty_square
+
 
 def play_many(
     player_x: Player,

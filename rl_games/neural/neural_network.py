@@ -1,6 +1,6 @@
 from typing import Tuple, Sequence
+from dataclasses import dataclass
 import numpy as np
-from dataclasses import dataclass, field
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
@@ -43,6 +43,7 @@ class NeuralNetwork:
         return output  # type: ignore
 
     def _compute_gradients(self, input_vector: np.ndarray, target: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        # pylint: disable=too-many-locals
         assert input_vector.shape == (1, self.input_size)
         assert target.shape == (1, self.output_size)
         # Feed forward (same as predict, but we'll need some intermediate variables)
@@ -70,7 +71,7 @@ class NeuralNetwork:
     def _update_weights(self, dcost_dweights01: np.ndarray, dcost_dweights12: np.ndarray) -> None:
         self.weights_01 -= dcost_dweights01 * self.learning_rate
         self.weights_12 -= dcost_dweights12 * self.learning_rate
-    
+
     def calculate_total_cost(self, input_vectors: Sequence[np.ndarray], targets: Sequence[np.ndarray]) -> float:
         """
         >>> np.random.seed(1)

@@ -11,6 +11,7 @@ class Countdown(Game[int, int]):
     start: int = 20
 
     def get_actions(self, state: int) -> Generator[int, None, None]:
+        # pylint: disable=no-self-use
         if state >= 3:
             yield 3
         if state >= 2:
@@ -22,12 +23,14 @@ class Countdown(Game[int, int]):
         return self.start
 
     def updated(self, state: int, action: int) -> int:
+        # pylint: disable=no-self-use
         return state - action
 
     def get_score_and_game_over(self, state: int) -> Tuple[int, bool]:
         """
         In this game, if the state is 0, the last player to take a turn won.
         """
+        # pylint: disable=no-self-use
         if state == 0:
             return 1, True
         return 0, state < 0

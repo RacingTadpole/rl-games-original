@@ -8,16 +8,13 @@
 # A NAC action is just a position on the board, ie. size * size.
 # For simplicity let's assume size = 3, ie. 54 states and 9 actions.
 
-import sys
 import random
-import numpy as np
 from dataclasses import dataclass
-from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence, Any, Callable
-from collections import defaultdict
+from typing import Generic, Any
+import numpy as np
 
 from rl_games.core.game import State, Action, Game
 from rl_games.core.player import Player
-from rl_games.games.nac import Nac, NacState, NacAction, x_marker, o_marker, empty_square
 from rl_games.neural.neural_network import NeuralNetwork
 from .setup import DqnSetup
 
@@ -28,7 +25,7 @@ class DqnPlayer(Player, Generic[State, Action]):
     explore_chance: float = 0.1
     discount_factor: float = 0.9
 
-    def __post_init__(self, *args: Any, **kwargs: Any) -> None:
+    def __post_init__(self, *_args: Any, **_kwargs: Any) -> None:
         self.model = NeuralNetwork(
             input_size=self.dqn.num_states,
             hidden_size=self.dqn.hidden_size,
@@ -70,7 +67,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         '2.742'
         """
         actions = list(game.get_actions(state))
-        if len(actions):
+        if len(actions) > 0:
             model_output = self.model.predict(self.dqn.get_input_vector(state))
             return self.dqn.get_action_and_value_from_output(game, model_output, actions)[1]
         # If no actions are possible, the game must be over, and the value is 0.

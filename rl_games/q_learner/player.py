@@ -1,10 +1,9 @@
 # Reinforcement Learning - Q training.
 # Each player keeps a "Q table", ie. a mapping of (board, action) to values.
 # The values are updated every turn using the Bellman equation.
-import sys
 import random
 from dataclasses import dataclass, field
-from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence
+from typing import Generic, Tuple, Dict
 from collections import defaultdict
 
 from rl_games.core.game import State, Action, Game
@@ -31,20 +30,19 @@ class QPlayer(Player, Generic[State, Action]):
         if random.uniform(0, 1) <= self.explore_chance:
             # Explore
             return random.choice(actions)
-        else:
-            # Greedy action - choose action with greatest expected value
-            # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-            random.shuffle(actions)
-            max_reward = -1.0
-            if len(actions) == 0:
-                raise IndexError(f'No actions available from {state}')
-            best_action = actions[0]
-            for action in actions:
-                expected_reward = self.action_value.get((state, action), 0)
-                if expected_reward > max_reward:
-                    max_reward = expected_reward
-                    best_action = action
-            return best_action
+        # Greedy action - choose action with greatest expected value
+        # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
+        random.shuffle(actions)
+        max_reward = -1.0
+        if len(actions) == 0:
+            raise IndexError(f'No actions available from {state}')
+        best_action = actions[0]
+        for action in actions:
+            expected_reward = self.action_value.get((state, action), 0)
+            if expected_reward > max_reward:
+                max_reward = expected_reward
+                best_action = action
+        return best_action
 
     def value(self, game: Game, state: State) -> float:
         """
@@ -56,7 +54,7 @@ class QPlayer(Player, Generic[State, Action]):
         (1, 0, 2)
         """
         actions = list(game.get_actions(state))
-        if len(actions):
+        if len(actions) > 0:
             return max(self.action_value.get((state, action), 0) for action in actions)
         # If no actions are possible, the game must be over, and the value is 0.
         return 0

@@ -1,7 +1,7 @@
 # Run with:
 #     python -m rl_games.games.q_learner.nac_play
 
-from typing import Union, Sequence, Tuple
+from typing import Sequence, Tuple
 from rl_games.q_learner.player import QPlayer
 from rl_games.core.player import Player
 from rl_games.core.play import play_many
@@ -30,5 +30,5 @@ def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:
 
 if __name__ == '__main__':
     print('Training AI...')
-    game, players = get_sample_game_and_trained_players()
-    play_human_ui(game, players)
+    game1, players1 = get_sample_game_and_trained_players()
+    play_human_ui(game1, players1)

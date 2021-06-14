@@ -1,7 +1,7 @@
 # Run with:
 #     python -m rl_games.games.q_learner.chopsticks_play
 
-from typing import Union, Sequence, Tuple
+from typing import Sequence, Tuple
 from rl_games.q_learner.player import QPlayer
 from rl_games.core.player import Player
 from rl_games.core.play import play_many
@@ -12,7 +12,10 @@ from rl_games.games.chopsticks import Chopsticks, ChopsticksState, ChopsticksAct
 
 def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:
     game = Chopsticks()
-    players = [QPlayer[ChopsticksState, ChopsticksAction]('P1'), QPlayer[ChopsticksState, ChopsticksAction]('P2')]
+    players = [
+        QPlayer[ChopsticksState, ChopsticksAction]('P1'),
+        QPlayer[ChopsticksState, ChopsticksAction]('P2'),
+    ]
 
     play_many(game, players, 25000)
     for player in players:
@@ -30,5 +33,5 @@ def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:
 
 if __name__ == '__main__':
     print('Training AI...')
-    game, players = get_sample_game_and_trained_players()
-    play_human_ui(game, players)
+    game1, players1 = get_sample_game_and_trained_players()
+    play_human_ui(game1, players1)

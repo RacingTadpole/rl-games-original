@@ -1,6 +1,5 @@
-import random
 from dataclasses import dataclass
-from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence, Union
+from typing import Generic, Optional, Dict, List, Sequence
 from collections import defaultdict
 
 from .game import State, Action, Game
@@ -27,11 +26,12 @@ def play(
     Plays a multiplayer game to the end, and reports the winner.
     Updates each player.
 
+    >>> import random
     >>> from rl_games.games.countdown import Countdown
     >>> from rl_games.q_learner.player import QPlayer
     >>> game = Countdown()
     >>> def nice_action_value(player: Player):
-    ...    return player.id, {k: float(f'{v:.4f}') for k, v in player.action_value.items() if v != 0}
+    ...    return player.id, {k: float(f'{v:.4f}') for k,v in player.action_value.items() if v != 0}
 
     1 player
     >>> players = [QPlayer('A')]
@@ -58,6 +58,7 @@ def play(
     turn_records: List[TurnRecord] = [TurnRecord()] * len(players)
     state = game.get_init_state()
     game_over = False
+    player: Optional[Player] = None
     while not game_over:
         for index, player in enumerate(players):
             turn_record = turn_records[index]
@@ -105,6 +106,7 @@ def play_many(
     Returns the fraction won by each player.
     Starting at 20, B can always win.
 
+    >>> import random
     >>> from rl_games.games.countdown import Countdown
     >>> from rl_games.q_learner.player import QPlayer
     >>> game = Countdown(start=20)

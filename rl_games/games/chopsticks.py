@@ -1,8 +1,7 @@
 # Chopsticks
 
-import random
-from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Sequence, cast, Generic, TypeVar, Generator
+from dataclasses import dataclass
+from typing import Tuple, Generator
 from rl_games.core.game import Game
 
 MAX_ROUNDS = 100
@@ -63,6 +62,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         >>> list(game.get_actions(state))
         [H1 2 -> H1 P1, H1 2 -> H2 P1, H1 1 -> H2 P2]
         """
+        # pylint: disable=too-many-nested-blocks
         this_player = state.next_turn
         for to_player in range(self.num_players):
             for from_hand in range(self.num_hands):

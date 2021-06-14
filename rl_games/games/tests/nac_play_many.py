@@ -1,5 +1,4 @@
 from typing import Sequence, Dict, Any
-import random
 
 from rl_games.q_learner.player import Player
 from rl_games.core.play import play_many
@@ -12,6 +11,7 @@ def nac_play_many(
     **kwargs: Any
 ) -> Dict[str, float]:
     """
+    >>> import random
     >>> from rl_games.q_learner.player import QPlayer
     >>> random.seed(2)
     >>> x, o = QPlayer('X'), QPlayer('O')
