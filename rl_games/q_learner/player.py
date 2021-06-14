@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Reinforcement Learning - Q training.
 # Each player keeps a "Q table", ie. a mapping of (board, action) to values.
 # The values are updated every turn using the Bellman equation.

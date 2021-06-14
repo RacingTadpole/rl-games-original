@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 from typing import Union, Sequence, Optional
 from rl_games.q_learner.player import QPlayer
 from .player import Player

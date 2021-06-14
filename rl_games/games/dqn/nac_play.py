@@ -1,14 +1,16 @@
-# python -m rl_games.dqn.sample
+# Run with:
+#     python -m rl_games.games.dqn.nac_play
 
 from typing import Union, Sequence, Tuple
-from rl_games.dqn.nac_player import DqnPlayer
+
+from rl_games.dqn.dqn_player import DqnPlayer
 from rl_games.core.play import play, play_many
 from rl_games.core.play_human import play_human_ui
 from rl_games.core.player import Player
 from rl_games.core.game import Game
-from rl_games.games.nac import Nac
+
 from rl_games.games.nac import Nac, NacState, NacAction
-from rl_games.dqn.nac_setup import NacDqnSetup
+from .nac import NacDqnSetup
 
 
 def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:

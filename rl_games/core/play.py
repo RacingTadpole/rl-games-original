@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 import random
 from dataclasses import dataclass
 from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence, Union

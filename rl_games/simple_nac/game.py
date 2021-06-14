@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Noughts and crosses
 # The game and player definitions.
 

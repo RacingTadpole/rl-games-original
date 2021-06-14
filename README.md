@@ -14,7 +14,7 @@ pipenv shell
 To try your hand playing noughts and crosses against the computer (trained with a Q-table):
 
 ```
-python -m rl_games.games.sample_q.nac
+python -m rl_games.games.q_learner.nac_play
 ```
 
 ## Chopsticks
@@ -22,5 +22,5 @@ python -m rl_games.games.sample_q.nac
 To try your hand playing chopsticks against the computer (trained with a Q-table):
 
 ```
-python -m rl_games.games.sample_q.chopsticks
+python -m rl_games.games.q_learner.chopsticks_play
 ```

@@ -1,7 +1,5 @@
-# pylint: disable=unsubscriptable-object
-
 # Run with:
-#     python -m rl_games.games.sample_q.chopsticks
+#     python -m rl_games.games.q_learner.chopsticks_play
 
 from typing import Union, Sequence, Tuple
 from rl_games.q_learner.player import QPlayer

@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Noughts and crosses
 # Reinforcement Learning - Q training.
 # Each player keeps a "Q table", ie. a mapping of (board, action) to values.

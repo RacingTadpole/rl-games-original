@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Noughts and crosses
 # Reinforcement Learning - simple training.
 # This records the history of moves and updates the value function at

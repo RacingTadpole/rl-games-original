@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 from dataclasses import dataclass
 from typing import Tuple, Generator
 from rl_games.core.game import Game

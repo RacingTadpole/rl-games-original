@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Chopsticks
 
 import random
