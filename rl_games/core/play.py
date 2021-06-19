@@ -1,12 +1,9 @@
-# pylint: disable=unsubscriptable-object
-
-import random
 from dataclasses import dataclass
-from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence, Union
+from typing import Generic, Optional, Dict, List, Sequence
 from collections import defaultdict
 
 from .game import State, Action, Game
-from rl_games.q_learner.player import Player
+from .player import Player
 
 
 @dataclass
@@ -29,13 +26,15 @@ def play(
     Plays a multiplayer game to the end, and reports the winner.
     Updates each player.
 
+    >>> import random
     >>> from rl_games.games.countdown import Countdown
+    >>> from rl_games.q_learner.player import QPlayer
     >>> game = Countdown()
     >>> def nice_action_value(player: Player):
-    ...    return player.id, {k: float(f'{v:.4f}') for k, v in player.action_value.items() if v != 0}
+    ...    return player.id, {k: float(f'{v:.4f}') for k,v in player.action_value.items() if v != 0}
 
     1 player
-    >>> players = [Player('A')]
+    >>> players = [QPlayer('A')]
     >>> random.seed(2)
     >>> nice_action_value(play(game, players))
     ('A', {(2, 2): 1.0})
@@ -45,7 +44,7 @@ def play(
     ('A', {(2, 2): 1.9, (3, 3): 1.0, (5, 3): 0.09})
 
     3 players
-    >>> players = Player('A'), Player('B'), Player('C')
+    >>> players = QPlayer('A'), QPlayer('B'), QPlayer('C')
     >>> random.seed(2)
     >>> play(game, players).id
     'C'
@@ -59,6 +58,7 @@ def play(
     turn_records: List[TurnRecord] = [TurnRecord()] * len(players)
     state = game.get_init_state()
     game_over = False
+    player: Optional[Player] = None
     while not game_over:
         for index, player in enumerate(players):
             turn_record = turn_records[index]
@@ -96,65 +96,6 @@ def play(
             return players[0] if player == players[1] else players[1]
     return None
 
-def get_human_action(game: Game[State, Action], state: State, player_name: str) -> Action:
-    actions = list(game.get_actions(state))
-    choice = 0
-    while choice < 1 or choice > len(actions):
-        print(f'Your turn {player_name}. You can choose:')
-        for index, action in enumerate(actions):
-            print(f'{index + 1}.', action)
-        choice_str = input('Please choose a number: ')
-        try:
-            choice = int(choice_str)
-        except:
-            choice = 1
-    return actions[choice - 1]
-    
-
-def play_human(
-    game: Game[State, Action],
-    players: Sequence[Union[Player[State, Action], str]],
-    verbose: bool = False,
-) -> Optional[Union[Player[State, Action], str]]:
-    """
-    Plays a multiplayer game against a human to the end, and reports the winner.
-    Pass a string representing the name of the player for any human players.
-    Does not update the players.
-    """
-    state = game.get_init_state()
-    game_over = False
-    while not game_over:
-        for player in players:
-            print()
-            print(state)
-            print()
-            if isinstance(player, str):
-                # Ask the human for their action.
-                action = get_human_action(game, state, player)
-            else:
-                # Choose an AI action.
-                action = player.choose_action(game, state)
-                print(f'{player.id}: {action}')
-            new_state = game.updated(state, action)
-            reward, game_over = game.get_score_and_game_over(new_state)
-            # Finally, update the state for the next player.
-            state = new_state
-            if game_over:
-                print()
-                print(new_state)
-                print('Game over!')
-                print()
-                break
-
-    if reward > 0:
-        return player
-    if reward < 0:
-        # If there are two players, the other player must have won.
-        # Otherwise, there was no winner, only a loser.
-        if len(players) == 2:
-            return players[0] if player == players[1] else players[1]
-    return None
-
 def play_many(
     game: Game,
     players: Sequence[Player],
@@ -165,17 +106,19 @@ def play_many(
     Returns the fraction won by each player.
     Starting at 20, B can always win.
 
+    >>> import random
     >>> from rl_games.games.countdown import Countdown
+    >>> from rl_games.q_learner.player import QPlayer
     >>> game = Countdown(start=20)
     >>> random.seed(2)
-    >>> a, b = Player('A'), Player('B')
+    >>> a, b = QPlayer('A'), QPlayer('B')
     >>> play_many(game, [a, b])
     {'A': 0.243, 'B': 0.757}
 
     If we had started at 21, then A can always win.
     >>> game = Countdown(start=21)
     >>> random.seed(2)
-    >>> a, b = Player('A'), Player('B')
+    >>> a, b = QPlayer('A'), QPlayer('B')
     >>> play_many(game, [a, b])
     {'A': 0.693, 'B': 0.307}
     """

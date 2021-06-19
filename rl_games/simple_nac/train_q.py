@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Noughts and crosses
 # Reinforcement Learning - Q training.
 # Each player keeps a "Q table", ie. a mapping of (board, action) to values.
@@ -7,15 +5,15 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List, Callable
-from copy import deepcopy
+from typing import Callable, Iterator, Tuple, Optional, Dict
+from mypy_extensions import DefaultArg
 from collections import defaultdict
 
 from .game import (
     Board, Player, Marker, Square, Action,
-    x_marker, o_marker,
+    x_marker, o_marker, empty_square,
     get_init_board, get_updated_board, get_actions,
-    get_other_marker, is_game_over, play_many
+    get_other_marker, is_game_over
 )
 
 
@@ -23,6 +21,7 @@ from .game import (
 class QPlayer(Player):
     """
     Learn as X (first player) against a random opponent.
+    >>> from .game import play_many
     >>> random.seed(2)
     >>> x, o = QPlayer(explore_chance=0.25), QPlayer(explore_chance=1)
     >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
@@ -53,15 +52,19 @@ class QPlayer(Player):
     action_value: Dict[Tuple[Board, Action], float] = field(default_factory=lambda: defaultdict(float))
     discount_factor: float = 0.9
 
-    def value(self, board: Board, marker: Marker, get_actions: Callable=get_actions) -> float:
+    def value(self,
+        board: Board,
+        marker: Marker,
+        this_get_actions: Callable[[Board, Marker, DefaultArg(bool)], Iterator[Action]] = get_actions,
+    ) -> float:
         """
         >>> random.seed(2)
         >>> player = QPlayer(action_value={(1, 'a'): 2, (1, 'b'): 3, (1, 'c'): 7, (2, 'a'): 15})
-        >>> player.value(1, None, get_actions=lambda _, __: ('a', 'b', 'c'))
+        >>> player.value(1, None, lambda _, __: ('a', 'b', 'c'))
         7
         """
-        actions = list(get_actions(board, marker))
-        if len(actions):
+        actions = list(this_get_actions(board, marker))
+        if len(actions) > 0:
             return max(self.action_value.get((board, action), self.base_value)
                        for action in actions)
         # If no actions are possible, the game must be over, and the value is 0.
@@ -85,18 +88,17 @@ class QPlayer(Player):
         if random.uniform(0, 1) <= self.explore_chance:
             # Explore
             return random.choice(actions)
-        else:
-            # Greedy action - choose action with greatest expected value
-            # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-            random.shuffle(actions)
-            max_reward = -1.0
-            best_action = actions[0]
-            for action in actions:
-                expected_reward = self.action_value.get((board, action), self.base_value)
-                if expected_reward > max_reward:
-                    max_reward = expected_reward
-                    best_action = action
-            return best_action
+        # Greedy action - choose action with greatest expected value
+        # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
+        random.shuffle(actions)
+        max_reward = -1.0
+        best_action = actions[0]
+        for action in actions:
+            expected_reward = self.action_value.get((board, action), self.base_value)
+            if expected_reward > max_reward:
+                max_reward = expected_reward
+                best_action = action
+        return best_action
 
     def print_action_values(self) -> None:
         for (board, action), value in sorted(self.action_value.items()):
@@ -186,6 +188,7 @@ def play_once_q_training(
     players = {x_marker: player_x, o_marker: player_o}
     score = 0
     game_over = False
+    marker: Marker
     while not game_over:
         for marker, player in players.items():
             other_player = players[get_other_marker(marker)]
@@ -214,4 +217,4 @@ def play_once_q_training(
         return marker
     if score < 0:
         return get_other_marker(marker)
-    return ''
+    return empty_square

@@ -6,8 +6,15 @@ name = "pypi"
 [packages]
 mypy = "*"
 pytest = "*"
+# Note pipenv may not import the right wheel for numpy on Apple Silicon.
+# Instead install it on the system with pip3 and copy it from there.
+# Its path is given by `python -c 'import numpy; print(numpy.__file__)' `.
+# Also I find 1.20.1 works but 1.20.3 does not.
+numpy = "==1.20.1"
+tqdm = "*"
 
 [dev-packages]
+pylint = "*"
 
 [requires]
 python_version = "3.9"

@@ -1,5 +1,3 @@
-# pylint: disable=unsubscriptable-object
-
 # Noughts and crosses
 # Reinforcement Learning - simple training.
 # This records the history of moves and updates the value function at
@@ -9,21 +7,22 @@
 #     reward = prior + player.learning_rate * (reward - prior)
 #     player.value[state] = reward
 
-import random
 from dataclasses import dataclass, field
-from typing import Tuple, Literal, Optional, Iterator, Dict, List
-from copy import deepcopy
+from typing import Callable, Dict, Iterator, List
+from mypy_extensions import DefaultArg
 
 from .game import (
-    Board, Player, Marker, Square,
-    get_init_board, get_updated_board, get_actions, get_other_marker, is_game_over, play_many,
-    x_marker, o_marker
+    Action, Board, Player, Marker, Square, get_actions,
+    get_init_board, get_updated_board, get_other_marker, is_game_over,
+    x_marker, o_marker, empty_square
 )
 
 
 @dataclass
 class SimplePlayer(Player):
     """
+    >>> import random
+    >>> from .game import play_many
     >>> random.seed(2)
     >>> x, o = SimplePlayer(), SimplePlayer()
     >>> play_many(x, o, play_once=play_once_simple_training)
@@ -65,7 +64,11 @@ class SimplePlayer(Player):
 
     _value: Dict[Board, float] = field(default_factory=dict)
 
-    def value(self, board: Board, marker: Marker) -> float:
+    def value(self,
+        board: Board,
+        _marker: Marker,
+        _this_get_actions: Callable[[Board, Marker, DefaultArg(bool)], Iterator[Action]] = get_actions,
+    ) -> float:
         return self._value.get(board, self.base_value)
 
     def update_values(
@@ -107,6 +110,7 @@ def play_once_simple_training(
 ) -> Square:
     """
     Returns the winner's marker, if any.
+    >>> import random
     >>> random.seed(1)
     >>> x, o = SimplePlayer(), SimplePlayer()
     >>> play_once_simple_training(x, o)
@@ -130,6 +134,8 @@ def play_once_simple_training(
     players = {x_marker: player_x, o_marker: player_o}
     score = 0
     game_over = False
+    marker: Marker
+    player: SimplePlayer
     while not game_over:
         for marker, player in players.items():
             action = player.choose_action(board, marker, restrict_opening)
@@ -142,7 +148,7 @@ def play_once_simple_training(
                 break
 
     # Override the learning rate on the final board reward - just set it to the score. (Optional.)
-    player._value[board] = score
+    player._value[board] = score  # pylint: disable=protected-access
     player.update_values(history[marker][:-1], marker, score)
 
     other_marker = get_other_marker(marker)
@@ -153,4 +159,4 @@ def play_once_simple_training(
         return marker
     if score < 0:
         return other_marker
-    return ''
+    return empty_square

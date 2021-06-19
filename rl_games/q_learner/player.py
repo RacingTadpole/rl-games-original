@@ -1,21 +1,17 @@
-# pylint: disable=unsubscriptable-object
-
-# Noughts and crosses
 # Reinforcement Learning - Q training.
 # Each player keeps a "Q table", ie. a mapping of (board, action) to values.
 # The values are updated every turn using the Bellman equation.
-import sys
 import random
 from dataclasses import dataclass, field
-from typing import Generic, Tuple, Literal, Optional, Iterator, Dict, List, Sequence
+from typing import Generic, Tuple, Dict
 from collections import defaultdict
 
 from rl_games.core.game import State, Action, Game
+from rl_games.core.player import Player
 
 
 @dataclass
-class Player(Generic[State, Action]):
-    id: str = field(default_factory=lambda: f'{random.randrange(sys.maxsize)}')
+class QPlayer(Player, Generic[State, Action]):
     learning_rate: float = 0.1
     explore_chance: float = 0.1
     action_value: Dict[Tuple[State, Action], float] = field(default_factory=lambda: defaultdict(float))
@@ -26,7 +22,7 @@ class Player(Generic[State, Action]):
         >>> from rl_games.games.countdown import Countdown
         >>> random.seed(3)
         >>> game = Countdown()
-        >>> player = Player[int, int]('A', explore_chance=0)
+        >>> player = QPlayer[int, int]('A', explore_chance=0)
         >>> player.choose_action(game, 5), player.choose_action(game, 5)
         (2, 3)
         """
@@ -34,32 +30,31 @@ class Player(Generic[State, Action]):
         if random.uniform(0, 1) <= self.explore_chance:
             # Explore
             return random.choice(actions)
-        else:
-            # Greedy action - choose action with greatest expected value
-            # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-            random.shuffle(actions)
-            max_reward = -1.0
-            if len(actions) == 0:
-                raise IndexError(f'No actions available from {state}')
-            best_action = actions[0]
-            for action in actions:
-                expected_reward = self.action_value.get((state, action), 0)
-                if expected_reward > max_reward:
-                    max_reward = expected_reward
-                    best_action = action
-            return best_action
+        # Greedy action - choose action with greatest expected value
+        # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
+        random.shuffle(actions)
+        max_reward = -1.0
+        if len(actions) == 0:
+            raise IndexError(f'No actions available from {state}')
+        best_action = actions[0]
+        for action in actions:
+            expected_reward = self.action_value.get((state, action), 0)
+            if expected_reward > max_reward:
+                max_reward = expected_reward
+                best_action = action
+        return best_action
 
     def value(self, game: Game, state: State) -> float:
         """
         >>> from rl_games.games.countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
-        >>> player = Player[int, int](action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
+        >>> player = QPlayer[int, int]('A', action_value={(1, 1): 1, (1, 2): 0, (2, 3): -7, (3, 3): 2})
         >>> player.value(game, 1), player.value(game, 2), player.value(game, 3)
         (1, 0, 2)
         """
         actions = list(game.get_actions(state))
-        if len(actions):
+        if len(actions) > 0:
             return max(self.action_value.get((state, action), 0) for action in actions)
         # If no actions are possible, the game must be over, and the value is 0.
         return 0
@@ -79,7 +74,7 @@ class Player(Generic[State, Action]):
         >>> from rl_games.games.countdown import Countdown
         >>> random.seed(2)
         >>> game = Countdown()
-        >>> player = Player()
+        >>> player = QPlayer('A')
         >>> player.update_action_value(game, 4, True, 6, 1)
         >>> player.update_action_value(game, 2, True, 4, 0)
         >>> player.update_action_value(game, 0, True, 2, 0)

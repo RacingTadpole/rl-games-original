@@ -5,21 +5,28 @@
 Install pipenv and type:
 
 ```
+pipenv install
 pipenv shell
 ```
 
 ## Noughts and crosses
 
-Try your hand against the computer playing noughts and crosses with:
+To try your hand playing noughts and crosses against the computer (trained with a Q-table):
 
 ```
-python -m rl_games.games.nac_play_human
+python -m rl_games.games.q_learner.nac_play
+```
+
+To play the version trained with a deep Q network, use
+
+```
+python -m rl_games.games.dqn.nac_play
 ```
 
 ## Chopsticks
 
-Try playing chopsticks with:
+To try your hand playing chopsticks against the computer (trained with a Q-table):
 
 ```
-python -m rl_games.games.chopsticks_play_human
+python -m rl_games.games.q_learner.chopsticks_play
 ```
