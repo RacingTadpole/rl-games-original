@@ -4,6 +4,7 @@
 import random
 from dataclasses import dataclass
 from typing import Optional, Tuple, Literal, Iterator, Sequence, cast, Callable
+from mypy_extensions import DefaultArg
 from rl_games.games.nac import x_marker, o_marker, empty_square, Marker, Square
 
 
@@ -42,7 +43,11 @@ class Player:
     explore_chance: float = 0.1
     base_value: float = 0
 
-    def value(self, board: Board, marker: Marker) -> float:
+    def value(self,
+        board: Board,
+        marker: Marker,
+        this_get_actions: Callable[[Board, Marker, DefaultArg(bool)], Iterator[Action]] = get_actions,
+    ) -> float:
         # pylint: disable=unused-argument
         # Subclass Player to improve this.
         return self.base_value

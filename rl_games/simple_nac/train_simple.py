@@ -8,10 +8,11 @@
 #     player.value[state] = reward
 
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Callable, Dict, Iterator, List
+from mypy_extensions import DefaultArg
 
 from .game import (
-    Board, Player, Marker, Square,
+    Action, Board, Player, Marker, Square, get_actions,
     get_init_board, get_updated_board, get_other_marker, is_game_over,
     x_marker, o_marker, empty_square
 )
@@ -63,7 +64,11 @@ class SimplePlayer(Player):
 
     _value: Dict[Board, float] = field(default_factory=dict)
 
-    def value(self, board: Board, _marker: Marker) -> float:
+    def value(self,
+        board: Board,
+        _marker: Marker,
+        _this_get_actions: Callable[[Board, Marker, DefaultArg(bool)], Iterator[Action]] = get_actions,
+    ) -> float:
         return self._value.get(board, self.base_value)
 
     def update_values(

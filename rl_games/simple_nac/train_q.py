@@ -5,7 +5,8 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Tuple, Optional, Dict
+from typing import Callable, Iterator, Tuple, Optional, Dict
+from mypy_extensions import DefaultArg
 from collections import defaultdict
 
 from .game import (
@@ -51,14 +52,18 @@ class QPlayer(Player):
     action_value: Dict[Tuple[Board, Action], float] = field(default_factory=lambda: defaultdict(float))
     discount_factor: float = 0.9
 
-    def value(self, board: Board, marker: Marker) -> float:
+    def value(self,
+        board: Board,
+        marker: Marker,
+        this_get_actions: Callable[[Board, Marker, DefaultArg(bool)], Iterator[Action]] = get_actions,
+    ) -> float:
         """
         >>> random.seed(2)
         >>> player = QPlayer(action_value={(1, 'a'): 2, (1, 'b'): 3, (1, 'c'): 7, (2, 'a'): 15})
-        >>> player.value(1, None)
+        >>> player.value(1, None, lambda _, __: ('a', 'b', 'c'))
         7
         """
-        actions = list(get_actions(board, marker))
+        actions = list(this_get_actions(board, marker))
         if len(actions) > 0:
             return max(self.action_value.get((board, action), self.base_value)
                        for action in actions)
