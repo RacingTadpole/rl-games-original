@@ -17,7 +17,7 @@ def nac_play_many(
     >>> from ..nac import NacDqnSetup
     >>> random.seed(2)
     >>> players = [DqnPlayer[NacState, NacAction]('X', NacDqnSetup()), DqnPlayer[NacState, NacAction]('O', NacDqnSetup())]
-    >>> nac_play_many(players, 20)
+    >>> nac_play_many(players, range(20))
     {'O': 0.05, 'X': 0.2}
 
     TODO: improve this test.

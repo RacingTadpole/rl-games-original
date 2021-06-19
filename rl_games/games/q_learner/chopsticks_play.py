@@ -15,19 +15,11 @@ from rl_games.games.chopsticks import Chopsticks, ChopsticksState, ChopsticksAct
 def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:
     game = Chopsticks()
     players = [
-        QPlayer[ChopsticksState, ChopsticksAction]('P1', explore_chance=0.2),
-        QPlayer[ChopsticksState, ChopsticksAction]('P2', explore_chance=0.2),
+        QPlayer[ChopsticksState, ChopsticksAction]('P1', explore_chance=0.25),
+        QPlayer[ChopsticksState, ChopsticksAction]('P2', explore_chance=0.25),
     ]
 
-    for i in tqdm(range(50), desc='Training AI', bar_format='{l_bar}{bar}'):
-        play_many(game, players, 1000)
-        if i in (25, 40):
-            for player in players:
-                player.explore_chance = (i == 25 and 0.1 or 0.05)
-
-    for player in players:
-        player.explore_chance = 0
-
+    play_many(game, players, tqdm(range(50000), desc='Training AI', bar_format='{l_bar}{bar}'), reduce_explore_chance=True)
     return game, players
 
 

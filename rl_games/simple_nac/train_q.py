@@ -6,8 +6,8 @@
 import random
 from dataclasses import dataclass, field
 from typing import Callable, Iterator, Tuple, Optional, Dict
-from mypy_extensions import DefaultArg
 from collections import defaultdict
+from mypy_extensions import DefaultArg
 
 from .game import (
     Board, Player, Marker, Square, Action,

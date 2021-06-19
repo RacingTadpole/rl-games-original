@@ -19,15 +19,7 @@ def get_sample_game_and_trained_players() -> Tuple[Game, Sequence[Player]]:
         QPlayer[NacState, NacAction]('O', explore_chance=0.2),
     ]
 
-    for i in tqdm(range(30), desc='Training AI', bar_format='{l_bar}{bar}'):
-        play_many(game, players, 1000)
-        if i in (15, 25):
-            for player in players:
-                player.explore_chance = (i == 9 and 0.1 or 0.05)
-
-    for player in players:
-        player.explore_chance = 0
-
+    play_many(game, players, tqdm(range(30000), desc='Training AI', bar_format='{l_bar}{bar}'), reduce_explore_chance=True)
     return game, players
 
 

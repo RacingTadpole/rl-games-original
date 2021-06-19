@@ -99,8 +99,9 @@ def play(
 def play_many(
     game: Game,
     players: Sequence[Player],
-    num_rounds: int = 1000,
+    play_range: range = range(1000),
     verbose: bool = False,
+    reduce_explore_chance: bool = False,
 ) -> Dict[str, float]:
     """
     Returns the fraction won by each player.
@@ -122,9 +123,15 @@ def play_many(
     >>> play_many(game, [a, b])
     {'A': 0.693, 'B': 0.307}
     """
+    num_rounds = len(play_range)
+    if reduce_explore_chance:
+        explore_steps = [player.explore_chance / num_rounds for player in players]  # type: ignore
     count: Dict[str, float] = defaultdict(float)
-    for _ in range(num_rounds):
+    for _ in play_range:
         winner = play(game, players, verbose=verbose)
+        if reduce_explore_chance:
+            for i, player in enumerate(players):
+                player.explore_chance -= explore_steps[i]  # type: ignore
         if winner:
             count[winner.id] += 1
     return {player_id: total / num_rounds for player_id, total in count.items()}

@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Iterator, Generic, TypeVar, Tuple
+from typing import Any, Iterator, Generic, TypeVar, Tuple
 
 State = TypeVar('State')
 Action = TypeVar('Action')
