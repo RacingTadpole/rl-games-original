@@ -87,14 +87,30 @@ class DqnPlayer(Player, Generic[State, Action]):
         ie. it includes opponent moves.
         We'll imagine the dummy game is a 2-player game.
         >>> from rl_games.games.nac import Nac, NacState, NacAction
-        >>> from ..games.dqn.nac import NacDqnSetup
+        >>> from rl_games.games.dqn.nac import NacDqnSetup
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
-        >>> player = DqnPlayer('A', NacDqnSetup())
-        >>> empty = game.get_init_state()
-        >>> player.update_action_value(game, 4, True, 6, 1)
-        >>> player.update_action_value(game, 2, True, 4, 0)
-        >>> player.update_action_value(game, empty, True, 2, 0)
+        >>> player = DqnPlayer('X', NacDqnSetup())
+
+        Set up this game: [..X/.../...] -> [..X/.O./...] -> [.XX/.O./...] -> [.XX/.O./..O] -> [XXX/.O./..O]
+        After this game, the likelihood of X making the final winning move in position (0, 0) should have increased more than any other changes.
+
+        >>> states = [game.get_init_state()]
+        >>> actions = [NacAction(row=0, col=2), NacAction(row=1, col=1), NacAction(row=0, col=1), NacAction(row=2, col=2), NacAction(row=0, col=0)]
+        >>> for action in actions:
+        ...     states.append(game.updated(states[-1], action))
+
+        >>> x = player.model.predict(player.dqn.get_input_vector(states[4]))
+        >>> [round(a, 1) for a in x.flatten().tolist()]
+        [-4.4, 2.3, 2.6, 0.6, -1.5, -0.1, -3.5, -3.1, -1.8]
+
+        >>> player.update_action_value(game, states[0], actions[0], states[2], 0)
+        >>> player.update_action_value(game, states[2], actions[2], states[4], 0)
+        >>> player.update_action_value(game, states[4], actions[4], states[5], 1000)
+
+        >>> x = player.model.predict(player.dqn.get_input_vector(states[4]))
+        >>> [round(a, 1) for a in x.flatten().tolist()]
+        [2.6, 2.0, 2.2, 0.3, -1.2, -0.1, -3.5, -3.5, -1.7]
         """
         target = reward + self.discount_factor * np.max(
             self.model.predict(self.dqn.get_input_vector(new_state)))
