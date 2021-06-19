@@ -2,20 +2,19 @@
 
 from dataclasses import dataclass
 from typing import Tuple, Generator
-from rl_games.core.game import Game
+from rl_games.core.game import Game, PlayerIndex
 
 MAX_ROUNDS = 100
 
 FingerCount = int
 HandIndex = int
-PlayerIndex = int
 
 PlayerState = Tuple[FingerCount, ...]
 
 @dataclass(frozen=True)
 class ChopsticksState:
     finger_counts: Tuple[PlayerState, ...] = ()
-    next_turn: PlayerIndex = 0
+    next_player_index: PlayerIndex = 0
     num_turns: int = 0
 
     def __str__(self) -> str:
@@ -38,13 +37,13 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
     num_hands: int = 2
     fingers_per_hand: int = 4
 
-    def get_init_state(self, next_turn: int = 0) -> ChopsticksState:
+    def get_init_state(self) -> ChopsticksState:
         """
         >>> game = Chopsticks()
         >>> game.get_init_state()
-        ChopsticksState(finger_counts=((1, 1), (1, 1)), next_turn=0, num_turns=0)
+        ChopsticksState(finger_counts=((1, 1), (1, 1)), next_player_index=0, num_turns=0)
         """
-        return ChopsticksState(finger_counts=((1,) * self.num_hands,) * self.num_players, next_turn=next_turn)
+        return ChopsticksState(finger_counts=((1,) * self.num_hands,) * self.num_players)
 
     def get_actions(self, state: ChopsticksState) -> Generator[ChopsticksAction, None, None]:
         """
@@ -63,7 +62,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         [H1 2 -> H1 P1, H1 2 -> H2 P1, H1 1 -> H2 P2]
         """
         # pylint: disable=too-many-nested-blocks
-        this_player = state.next_turn
+        this_player = state.next_player_index
         for to_player in range(self.num_players):
             for from_hand in range(self.num_hands):
                 num_fingers = state.finger_counts[this_player][from_hand]
@@ -93,19 +92,19 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
     def updated(self, state: ChopsticksState, action: ChopsticksAction) -> ChopsticksState:
         """
         >>> game = Chopsticks()
-        >>> state = game.get_init_state(next_turn=0)
+        >>> state = game.get_init_state()
         >>> actions = list(game.get_actions(state))
         >>> actions[0], actions[2]
         (H1 1 -> H2 P1, H1 1 -> H1 P2)
         >>> game.updated(state, actions[0])
-        ChopsticksState(finger_counts=((0, 2), (1, 1)), next_turn=1, num_turns=1)
+        ChopsticksState(finger_counts=((0, 2), (1, 1)), next_player_index=1, num_turns=1)
         >>> game.updated(state, actions[2])
-        ChopsticksState(finger_counts=((1, 1), (2, 1)), next_turn=1, num_turns=1)
-        >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_turn=1)
+        ChopsticksState(finger_counts=((1, 1), (2, 1)), next_player_index=1, num_turns=1)
+        >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_player_index=1)
         >>> game.updated(state, ChopsticksAction(from_hand=0, to_player=0, to_hand=0, fingers=1))
-        ChopsticksState(finger_counts=((0, 1), (1, 1)), next_turn=0, num_turns=1)
+        ChopsticksState(finger_counts=((0, 1), (1, 1)), next_player_index=0, num_turns=1)
         """
-        this_player = state.next_turn
+        this_player = state.next_player_index
         updated_counts = [list(player_state) for player_state in state.finger_counts]
         updated_counts[action.to_player][action.to_hand] += action.fingers
         if updated_counts[action.to_player][action.to_hand] > self.fingers_per_hand:
@@ -114,7 +113,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
             updated_counts[this_player][action.from_hand] -= action.fingers
         return ChopsticksState(
             finger_counts=tuple(tuple(player_state) for player_state in updated_counts),
-            next_turn=(this_player + 1) % self.num_players,
+            next_player_index=(this_player + 1) % self.num_players,
             num_turns=state.num_turns + 1
         )
 
@@ -124,19 +123,19 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
         Assume the turns happen in player order.
         We also cap the game at 1000 turns.
         >>> game = Chopsticks()
-        >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_turn=1, num_turns=0)
+        >>> state = ChopsticksState(finger_counts=((4, 1), (1, 1)), next_player_index=1, num_turns=0)
         >>> game.get_score_and_game_over(state)
         (0, False)
-        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_turn=0, num_turns=0)
+        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_player_index=0, num_turns=0)
         >>> game.get_score_and_game_over(state)
         (1, True)
-        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_turn=1, num_turns=0)
+        >>> state = ChopsticksState(finger_counts=((0, 0), (1, 1)), next_player_index=1, num_turns=0)
         >>> game.get_score_and_game_over(state)
         (-1, True)
         """
         has_lost = [all(fingers == 0 for fingers in player_state)
                     for player_state in state.finger_counts]
-        if has_lost[(state.next_turn - 1) % self.num_players]:
+        if has_lost[(state.next_player_index - 1) % self.num_players]:
             return -1, True
         if sum(1 if l else 0 for l in has_lost) == 1:
             return 1, True

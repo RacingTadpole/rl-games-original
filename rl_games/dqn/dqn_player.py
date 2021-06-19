@@ -2,7 +2,7 @@
 # Each player uses a neural network model.
 
 # To start with, let's just implement a noughts-and-crosses player here.
-# The state is:  board: Tuple[Tuple[Square, ...], ...]; next_turn: Marker = x_marker
+# The state is:  board: Tuple[Tuple[Square, ...], ...]; next_player_index: PlayerIndex = 0
 # For simplicitly let's encode the board as size^2 squares, each of which could be any of 3 states,
 # and the next turn as either player, ie. (size * size * 3) * 2.
 # A NAC action is just a position on the board, ie. size * size.
@@ -51,7 +51,7 @@ class DqnPlayer(Player, Generic[State, Action]):
             return random.choice(actions)
         # Greedy action - choose action with greatest expected value
         # Shuffle the actions (in place) to randomly choose between top-ranked equal-valued rewards
-        model_input = self.dqn.get_input_vector(state)
+        model_input = self.dqn.get_input_vector(game, state)
         model_output = self.model.predict(model_input)
         action, _ = self.dqn.get_action_and_value_from_output(game, model_output, action_mask)
         # TODO: fix this type ignore
@@ -69,7 +69,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         """
         action_mask = self.dqn.get_action_mask(game, state)
         if not np.all(action_mask):
-            model_output = self.model.predict(self.dqn.get_input_vector(state))
+            model_output = self.model.predict(self.dqn.get_input_vector(game, state))
             return self.dqn.get_action_and_value_from_output(game, model_output, action_mask)[1]
         # If no actions are possible, the game must be over, and the value is 0.
         return 0
@@ -100,7 +100,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> for action in actions:
         ...     states.append(game.updated(states[-1], action))
 
-        >>> x = player.model.predict(player.dqn.get_input_vector(states[4]))
+        >>> x = player.model.predict(player.dqn.get_input_vector(game, states[4]))
         >>> [round(a, 2) for a in x.flatten().tolist()]
         [-0.03, 0.01, 0.02, 0.01, -0.0, -0.01, -0.03, -0.03, -0.02]
 
@@ -108,12 +108,12 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> player.update_action_value(game, states[2], actions[2], states[4], 0)
         >>> player.update_action_value(game, states[4], actions[4], states[5], 1)
 
-        >>> x = player.model.predict(player.dqn.get_input_vector(states[4]))
+        >>> x = player.model.predict(player.dqn.get_input_vector(game, states[4]))
         >>> [round(a, 2) for a in x.flatten().tolist()]
         [0.09, 0.01, 0.02, 0.01, -0.0, -0.01, -0.03, -0.03, -0.02]
         """
         target = reward + self.discount_factor * np.max(
-            self.model.predict(self.dqn.get_input_vector(new_state)))
-        target_vector = self.model.predict(self.dqn.get_input_vector(old_state))
+            self.model.predict(self.dqn.get_input_vector(game, new_state)))
+        target_vector = self.model.predict(self.dqn.get_input_vector(game, old_state))
         target_vector[0][self.dqn.get_onehot_index_from_action(game, action)] = target
-        self.model.train([self.dqn.get_input_vector(old_state)], [target_vector], num_iterations=1)
+        self.model.train([self.dqn.get_input_vector(game, old_state)], [target_vector], num_iterations=1)

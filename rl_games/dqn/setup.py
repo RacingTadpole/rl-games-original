@@ -6,10 +6,10 @@ import numpy as np
 from rl_games.core.game import State, Action
 
 
-class StateToVector(Protocol):
+class GameAndStateToVector(Protocol):
     # pylint: disable=too-few-public-methods, invalid-name
     @staticmethod
-    def __call__(__state: Any) -> np.ndarray: ...
+    def __call__(__game: Any, __state: Any) -> np.ndarray: ...
 
 
 class GameAndStateToActionMask(Protocol):
@@ -35,8 +35,8 @@ class DqnSetup(Generic[State, Action]):
     hidden_size: int
     num_actions: int
 
-    # Callable[[State], np.ndarray] would be simpler, but https://github.com/python/mypy/issues/5485
-    get_input_vector: StateToVector
+    # Callable[[Game, State], np.ndarray] would be simpler, but https://github.com/python/mypy/issues/5485
+    get_input_vector: GameAndStateToVector
 
     # Callable[[Game, State], np.ndarray]
     get_action_mask: GameAndStateToActionMask

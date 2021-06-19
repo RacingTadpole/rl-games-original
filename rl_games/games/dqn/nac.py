@@ -2,16 +2,14 @@ from dataclasses import dataclass
 from typing import Tuple
 import numpy as np
 
-from rl_games.games.nac import Nac, NacState, NacAction, x_marker, o_marker, empty_square
+from rl_games.games.nac import Nac, NacState, NacAction, empty_square
 from rl_games.dqn.onehot import get_onehot_vector_from_index
 from rl_games.dqn.setup import (
-    DqnSetup, StateToVector, GameAndStateToActionMask, OutputToActionAndValue, ActionToIndex
+    DqnSetup, GameAndStateToVector, GameAndStateToActionMask, OutputToActionAndValue, ActionToIndex
 )
 
-m = {empty_square: 0, x_marker: 1, o_marker: 2}
 
-
-def get_nac_state_index(state: NacState) -> int:
+def get_nac_state_index(game: Nac, state: NacState) -> int:
     """
     Index states as:
         sum over row r, column c of m(r, c) * 3 ^ i(r, c)
@@ -20,38 +18,39 @@ def get_nac_state_index(state: NacState) -> int:
         i(r, c) = r * size + c
     Then, if 'o' is next player, add 3 ^ size^2
 
+    >>> game = Nac()
     >>> board = [[empty_square for _ in range(3)] for _ in range(3)]
-    >>> board
-    [['', '', ''], ['', '', ''], ['', '', '']]
-    >>> get_nac_state_index(NacState(board, x_marker))
+    >>> get_nac_state_index(game, NacState(board, next_player_index=0))
     0
-    >>> get_nac_state_index(NacState(board, o_marker))
+    >>> get_nac_state_index(game, NacState(board, next_player_index=1))
     19683
-    >>> board[0][1] = x_marker
-    >>> get_nac_state_index(NacState(board, x_marker))
+    >>> board[0][1] = game.markers[0]
+    >>> get_nac_state_index(game, NacState(board, next_player_index=0))
     3
-    >>> board[1][1] = o_marker
-    >>> get_nac_state_index(NacState(board, x_marker))
+    >>> board[1][1] = game.markers[1]
+    >>> get_nac_state_index(game, NacState(board, next_player_index=0))
     165
     """
-    one_d = [m[marker] for r, row in enumerate(state.board) for marker in row]
+    m = {empty_square: 0, game.markers[0]: 1, game.markers[1]: 2}
+    one_d = [m[marker] for row in state.board for marker in row]
     board_index = sum(v * 3 ** i for i, v in enumerate(one_d))
-    return board_index + 0 if state.next_turn == x_marker else 3 ** len(one_d)
+    return board_index + 0 if state.next_player_index == 0 else 3 ** len(one_d)
 
 
-def get_onehot_nac_input(state: NacState) -> np.ndarray:
+def get_onehot_nac_input(game: Nac, state: NacState) -> np.ndarray:
     """
-    >>> board = [[empty_square,] * 2,] * 2
-    >>> s = get_onehot_nac_input(NacState(board, x_marker))
+    >>> game = Nac(size=2)
+    >>> board = [[empty_square for _ in range(2)] for _ in range(2)]
+    >>> s = get_onehot_nac_input(game, NacState(board, next_player_index=0))
     >>> s.shape, s[:, :5]
     ((1, 162), array([[1, 0, 0, 0, 0]]))
-    >>> board[0][1] = x_marker
-    >>> s = get_onehot_nac_input(NacState(board, o_marker))
+    >>> board[0][1] = game.markers[0]
+    >>> s = get_onehot_nac_input(game, NacState(board, next_player_index=1))
     >>> s[:, :5], s[:, 81:86]
     (array([[0, 0, 0, 0, 0]]), array([[1, 0, 0, 0, 0]]))
     """
-    size = 2 * 3 ** len(state.board) ** 2
-    return get_onehot_vector_from_index(get_nac_state_index(state), size)
+    size = 2 * 3 ** game.size ** 2
+    return get_onehot_vector_from_index(get_nac_state_index(game, state), size)
 
 
 def get_nac_action_mask(game: Nac, state: NacState) -> np.ndarray:
@@ -60,6 +59,7 @@ def get_nac_action_mask(game: Nac, state: NacState) -> np.ndarray:
     https://numpy.org/doc/stable/reference/maskedarray.baseclass.html
 
     >>> game = Nac(size = 3)
+    >>> x_marker, o_marker = game.markers
     >>> board = [[empty_square for _ in range(3)] for _ in range(3)]
     >>> board[0][1] = x_marker
     >>> state = NacState(board, o_marker)
@@ -105,7 +105,7 @@ class NacDqnSetup(DqnSetup[NacState, NacAction]):
     num_states: int = 3 ** 9 * 2
     hidden_size: int = 18
     num_actions: int = 9
-    get_input_vector: StateToVector = get_onehot_nac_input
+    get_input_vector: GameAndStateToVector = get_onehot_nac_input
     get_action_mask: GameAndStateToActionMask = get_nac_action_mask
     get_action_and_value_from_output: OutputToActionAndValue = get_nac_action_and_value_from_onehot_output
     get_onehot_index_from_action: ActionToIndex = get_onehot_index_from_nac_action
