@@ -18,18 +18,19 @@ class NeuralNetwork:
     hidden_size: int
     output_size: int
     learning_rate: float = 0.1
+    initial_scale: float = 0.01
 
     def __post_init__(self) -> None:
         # Between input layer (layer 0) and hidden layer (layer 1)
-        self.weights_01 = np.random.randn(self.input_size, self.hidden_size)
+        self.weights_01 = np.random.normal(0, self.initial_scale, (self.input_size, self.hidden_size))
         # Between hidden (layer 1) and output (layer 2)
-        self.weights_12 = np.random.randn(self.hidden_size, self.output_size)
+        self.weights_12 = np.random.normal(0, self.initial_scale, (self.hidden_size, self.output_size))
 
     def predict(self, input_vector: np.ndarray) -> np.ndarray:
         """
         Feed the input vector forward through the neural network to get the output.
         >>> np.random.seed(1)
-        >>> nn = NeuralNetwork(5, 3, 2)
+        >>> nn = NeuralNetwork(5, 3, 2, initial_scale=1)
         >>> v = np.array([[0.1 * i for i in range(1, nn.input_size + 1)]])
         >>> nn.predict(v)
         array([[-0.91008182, -0.44266949]])
@@ -75,7 +76,7 @@ class NeuralNetwork:
     def calculate_total_cost(self, input_vectors: Sequence[np.ndarray], targets: Sequence[np.ndarray]) -> float:
         """
         >>> np.random.seed(1)
-        >>> nn = NeuralNetwork(5, 3, 2)
+        >>> nn = NeuralNetwork(5, 3, 2, initial_scale=1)
         >>> input_vectors = [np.random.standard_normal((1, nn.input_size)) for _ in range(200)]
         >>> targets = [np.array([[np.sum(v), np.sum(np.square(v))]]) for v in input_vectors]
         >>> nn.calculate_total_cost(input_vectors, targets)
@@ -94,7 +95,7 @@ class NeuralNetwork:
     ) -> Sequence[float]:
         """
         >>> np.random.seed(1)
-        >>> nn = NeuralNetwork(6, 4, 2)
+        >>> nn = NeuralNetwork(6, 4, 2, initial_scale=1)
         >>> input_vectors = [np.random.standard_normal((1, nn.input_size)) for _ in range(200)]
         >>> targets = [np.array([[np.sum(v), np.sum(np.square(v))]]) for v in input_vectors]
         >>> nn.train(input_vectors, targets, 20001, total_cost_step=20000)

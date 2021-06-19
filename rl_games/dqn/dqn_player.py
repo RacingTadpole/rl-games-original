@@ -60,12 +60,12 @@ class DqnPlayer(Player, Generic[State, Action]):
     def value(self, game: Game, state: State) -> float:
         """
         >>> from rl_games.games.nac import Nac, NacState, NacAction
-        >>> from ..games.dqn.nac import NacDqnSetup
+        >>> from rl_games.games.dqn.nac import NacDqnSetup
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
         >>> player = DqnPlayer[NacState, NacAction]('A', NacDqnSetup())
-        >>> f'{player.value(game, game.get_init_state()):.4}'
-        '2.742'
+        >>> round(player.value(game, game.get_init_state()), 4)
+        0.0189
         """
         action_mask = self.dqn.get_action_mask(game, state)
         if not np.all(action_mask):
@@ -101,16 +101,16 @@ class DqnPlayer(Player, Generic[State, Action]):
         ...     states.append(game.updated(states[-1], action))
 
         >>> x = player.model.predict(player.dqn.get_input_vector(states[4]))
-        >>> [round(a, 1) for a in x.flatten().tolist()]
-        [-4.4, 2.3, 2.6, 0.6, -1.5, -0.1, -3.5, -3.1, -1.8]
+        >>> [round(a, 2) for a in x.flatten().tolist()]
+        [-0.03, 0.01, 0.02, 0.01, -0.0, -0.01, -0.03, -0.03, -0.02]
 
         >>> player.update_action_value(game, states[0], actions[0], states[2], 0)
         >>> player.update_action_value(game, states[2], actions[2], states[4], 0)
-        >>> player.update_action_value(game, states[4], actions[4], states[5], 1000)
+        >>> player.update_action_value(game, states[4], actions[4], states[5], 1)
 
         >>> x = player.model.predict(player.dqn.get_input_vector(states[4]))
-        >>> [round(a, 1) for a in x.flatten().tolist()]
-        [2.6, 2.0, 2.2, 0.3, -1.2, -0.1, -3.5, -3.5, -1.7]
+        >>> [round(a, 2) for a in x.flatten().tolist()]
+        [0.09, 0.01, 0.02, 0.01, -0.0, -0.01, -0.03, -0.03, -0.02]
         """
         target = reward + self.discount_factor * np.max(
             self.model.predict(self.dqn.get_input_vector(new_state)))
