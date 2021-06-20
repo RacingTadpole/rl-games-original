@@ -1,8 +1,12 @@
-from typing import Tuple, Sequence
+from typing import NewType, Tuple, Sequence
 from dataclasses import dataclass
 import numpy as np
 
 from rl_games.dqn.types import ActionVector, StateVector
+
+Weights01Array = NewType('Weights01Array', np.ndarray)  # (I, H)
+Weights12Array = NewType('Weights12Array', np.ndarray)  # (H, O)
+Layer1Vector = NewType('Layer1Vector', np.ndarray)  # (1, H)
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
@@ -24,9 +28,9 @@ class NeuralNetwork:
 
     def __post_init__(self) -> None:
         # Between input layer (layer 0) and hidden layer (layer 1)
-        self.weights_01 = np.random.normal(0, self.initial_scale, (self.input_size, self.hidden_size))
+        self.weights_01 = Weights01Array(np.random.normal(0, self.initial_scale, (self.input_size, self.hidden_size)))
         # Between hidden (layer 1) and output (layer 2)
-        self.weights_12 = np.random.normal(0, self.initial_scale, (self.hidden_size, self.output_size))
+        self.weights_12 = Weights12Array(np.random.normal(0, self.initial_scale, (self.hidden_size, self.output_size)))
 
     def predict(self, input_vector: StateVector) -> ActionVector:
         """
@@ -37,41 +41,42 @@ class NeuralNetwork:
         >>> nn.predict(v)
         array([[-0.91008182, -0.44266949]])
         """
-        assert input_vector.shape == (1, self.input_size)
-        linear_layer_1 = np.dot(input_vector, self.weights_01)
-        layer_1 = sigmoid(linear_layer_1)
-        linear_layer_2 = np.dot(layer_1, self.weights_12)
-        output = linear_layer_2
-        # TODO: np.dot can return a non-array.
-        return output  # type: ignore
+        assert input_vector.shape == (1, self.input_size)  # (1, I)
+        linear_layer_1 = np.dot(input_vector, self.weights_01)  # (1, I) . (I, H) -> (1, H)
+        layer_1 = Layer1Vector(sigmoid(linear_layer_1))
+        linear_layer_2 = np.dot(layer_1, self.weights_12)  # (1, H) . (H, O) -> (1, O)
 
-    def _compute_gradients(self, input_vector: StateVector, target: ActionVector) -> Tuple[np.ndarray, np.ndarray]:
+        output = ActionVector(np.array(linear_layer_2)) # (1, O), extra call as np.dot can return a non-array.
+        return output
+
+    def _compute_gradients(self, input_vector: StateVector, target: ActionVector) -> Tuple[Weights01Array, Weights12Array]:
         # pylint: disable=too-many-locals
-        assert input_vector.shape == (1, self.input_size)
-        assert target.shape == (1, self.output_size)
+        assert input_vector.shape == (1, self.input_size)  # (1, I)
+        assert target.shape == (1, self.output_size)  # (1, O)
+
         # Feed forward (same as predict, but we'll need some intermediate variables)
         linear_layer_1 = np.dot(input_vector, self.weights_01)
-        layer_1 = sigmoid(linear_layer_1)
+        layer_1 = sigmoid(linear_layer_1)  # (1, H)
         linear_layer_2 = np.dot(layer_1, self.weights_12)
-        output = linear_layer_2
+        output = np.array(linear_layer_2)  # (1, O)
 
-        output_error = output - target
+        output_error = output - target  # (1, O)
         dcost_doutput = output_error  # Since the cost is output_error ^ 2
-        dlinear2_dweights12 = layer_1
-        doutput_dlinear2 = dsigmoid_dx(linear_layer_2)
-        dcost_dweights12 = np.dot(dlinear2_dweights12.T, dcost_doutput * doutput_dlinear2)
+        dlinear2_dweights12 = layer_1  # (1, H)
+        doutput_dlinear2 = dsigmoid_dx(linear_layer_2)  # (1, O)
+        dcost_dweights12 = np.dot(dlinear2_dweights12.T, dcost_doutput * doutput_dlinear2)  # (H, 1) . (1, O) -> (H, O)
 
-        dcost_dlinear2 = dcost_doutput * doutput_dlinear2
-        dlinear2_dlayer1 = self.weights_12
-        dcost_dlayer1 = np.dot(dcost_dlinear2, dlinear2_dlayer1.T)
+        dcost_dlinear2 = dcost_doutput * doutput_dlinear2  # (1, O)
+        dlinear2_dlayer1 = self.weights_12  # (H, O)
+        dcost_dlayer1 = np.dot(dcost_dlinear2, dlinear2_dlayer1.T)  # (1, O) . (O, H) -> (1, H)
 
-        dlayer1_dlinear1 = dsigmoid_dx(linear_layer_1)
-        dlinear1_dweights01 = input_vector
-        dcost_dweights01 = np.dot(dlinear1_dweights01.T, dlayer1_dlinear1 * dcost_dlayer1)
+        dlayer1_dlinear1 = dsigmoid_dx(linear_layer_1)  # (1, H)
+        dlinear1_dweights01 = input_vector  # (1, I)
+        dcost_dweights01 = np.dot(dlinear1_dweights01.T, dlayer1_dlinear1 * dcost_dlayer1)  # (I, 1) . (1, H) -> (I, H)
 
-        return dcost_dweights01, dcost_dweights12
+        return Weights01Array(dcost_dweights01), Weights12Array(dcost_dweights12)
 
-    def _update_weights(self, dcost_dweights01: np.ndarray, dcost_dweights12: np.ndarray) -> None:
+    def _update_weights(self, dcost_dweights01: Weights01Array, dcost_dweights12: Weights12Array) -> None:
         self.weights_01 -= dcost_dweights01 * self.learning_rate
         self.weights_12 -= dcost_dweights12 * self.learning_rate
 
