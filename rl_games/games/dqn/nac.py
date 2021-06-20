@@ -81,6 +81,12 @@ def get_nac_action_mask(game: Nac, state: NacState) -> ActionMask:
     return ActionMask(mask)
 
 
+def get_nac_action_from_vector_index(game: Nac, vector_index: int) -> NacAction:
+    row = int(vector_index // game.size)
+    col = int(vector_index % game.size)
+    return NacAction(row, col)
+
+
 def get_nac_action_and_value_from_onehot_output(
     game: Nac,
     output: ActionVector,
@@ -98,11 +104,10 @@ def get_nac_action_and_value_from_onehot_output(
     size = game.size
     masked_output = np.ma.array(output.reshape([size, size]), mask=action_mask, fill_value=-np.inf, dtype=np.float16)
     max_flattened_index = np.ma.argmax(masked_output)
-    # TODO: extract this conversion into another function too.
-    row = int(max_flattened_index // size)
-    col = int(max_flattened_index % size)
-    max_value = masked_output[row][col]
-    return NacAction(row, col), max_value
+
+    action = get_nac_action_from_vector_index(game, max_flattened_index)
+    max_value = masked_output[action.row][action.col]
+    return action, max_value
 
 
 def get_onehot_index_from_nac_action(game: Nac, action: NacAction) -> int:

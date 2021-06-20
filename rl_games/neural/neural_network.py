@@ -62,6 +62,8 @@ class NeuralNetwork:
 
         output_error = output - target  # (1, O)
         dcost_doutput = output_error  # Since the cost is output_error ^ 2
+
+        # Backpropagate
         dlinear2_dweights12 = layer_1  # (1, H)
         doutput_dlinear2 = dsigmoid_dx(linear_layer_2)  # (1, O)
         dcost_dweights12 = np.dot(dlinear2_dweights12.T, dcost_doutput * doutput_dlinear2)  # (H, 1) . (1, O) -> (H, O)

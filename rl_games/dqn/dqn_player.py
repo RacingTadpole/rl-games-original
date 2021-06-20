@@ -54,7 +54,6 @@ class DqnPlayer(Player, Generic[State, Action]):
         model_input = self.dqn.get_input_vector(game, state)
         model_output = self.model.predict(model_input)
         action, _ = self.dqn.get_action_and_value_from_output(game, model_output, action_mask)
-        # TODO: fix this type ignore
         return action  # type: ignore
 
     def value(self, game: Game, state: State) -> float:
