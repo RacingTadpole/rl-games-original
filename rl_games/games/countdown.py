@@ -26,7 +26,7 @@ class Countdown(Game[int, int]):
         # pylint: disable=no-self-use
         return state - action
 
-    def get_score_and_game_over(self, state: int) -> Tuple[int, bool]:
+    def get_score_and_game_over(self, state: int) -> Tuple[float, bool]:
         """
         In this game, if the state is 0, the last player to take a turn won.
         """

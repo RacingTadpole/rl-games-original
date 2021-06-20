@@ -28,7 +28,7 @@ class NacAction:
 @dataclass(frozen=True)
 class NacState:
     board: Tuple[Tuple[Square, ...], ...] = ()
-    next_player_index: PlayerIndex = 0
+    next_player_index: PlayerIndex = PlayerIndex(0)
 
     def __str__(self) -> str:
         """
@@ -93,7 +93,7 @@ class Nac(Game[NacState, NacAction]):
         new_board[action.row][action.col] = self.markers[state.next_player_index]
         return NacState(
             tuple(tuple(row) for row in new_board),
-            next_player_index = 1 - state.next_player_index,
+            next_player_index = PlayerIndex(1 - state.next_player_index),
         )
 
     def _get_winner(self, state: NacState) -> Optional[PlayerIndex]:
@@ -113,10 +113,10 @@ class Nac(Game[NacState, NacAction]):
             any(all(b[r][c] == m for r in range(size)) for c in range(size)) or \
             all(b[d][d] == m for d in range(size)) or \
             all(b[d][size - 1 - d] == m for d in range(size)):
-                return 0 if m == self.markers[0] else 1
+                return PlayerIndex(0) if m == self.markers[0] else PlayerIndex(1)
         return None
 
-    def get_score_and_game_over(self, state: NacState) -> Tuple[PlayerIndex, bool]:
+    def get_score_and_game_over(self, state: NacState) -> Tuple[float, bool]:
         """
         Because this is a two player game, the last player to take a turn was "not" state.next_player_index.
         >>> game = Nac()

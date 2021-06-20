@@ -14,7 +14,7 @@ PlayerState = Tuple[FingerCount, ...]
 @dataclass(frozen=True)
 class ChopsticksState:
     finger_counts: Tuple[PlayerState, ...] = ()
-    next_player_index: PlayerIndex = 0
+    next_player_index: PlayerIndex = PlayerIndex(0)
     num_turns: int = 0
 
     def __str__(self) -> str:
@@ -86,7 +86,7 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
                             if state.finger_counts[to_player][to_hand] == 0:
                                 continue
 
-                        yield ChopsticksAction(from_hand, to_player, to_hand, fingers)
+                        yield ChopsticksAction(from_hand, PlayerIndex(to_player), to_hand, fingers)
 
 
     def updated(self, state: ChopsticksState, action: ChopsticksAction) -> ChopsticksState:
@@ -113,11 +113,11 @@ class Chopsticks(Game[ChopsticksState, ChopsticksAction]):
             updated_counts[this_player][action.from_hand] -= action.fingers
         return ChopsticksState(
             finger_counts=tuple(tuple(player_state) for player_state in updated_counts),
-            next_player_index=(this_player + 1) % self.num_players,
+            next_player_index=PlayerIndex((this_player + 1) % self.num_players),
             num_turns=state.num_turns + 1
         )
 
-    def get_score_and_game_over(self, state: ChopsticksState) -> Tuple[int, bool]:
+    def get_score_and_game_over(self, state: ChopsticksState) -> Tuple[float, bool]:
         """
         In this game, you only win if you knock everyone else down to all zero fingers.
         Assume the turns happen in player order.

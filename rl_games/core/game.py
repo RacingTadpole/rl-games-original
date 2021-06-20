@@ -1,9 +1,9 @@
 from abc import abstractmethod, ABC
-from typing import Iterator, Generic, TypeVar, Tuple
+from typing import Iterator, Generic, TypeVar, Tuple, NewType
 
 State = TypeVar('State')
 Action = TypeVar('Action')
-PlayerIndex = int
+PlayerIndex = NewType('PlayerIndex', int)
 
 class Game(ABC, Generic[State, Action]):
     @abstractmethod
@@ -19,7 +19,7 @@ class Game(ABC, Generic[State, Action]):
         ...
 
     @abstractmethod
-    def get_score_and_game_over(self, state: State) -> Tuple[PlayerIndex, bool]:
+    def get_score_and_game_over(self, state: State) -> Tuple[float, bool]:
         """
         Return the reward for the player who took the most recent turn
         (ie. who got directly to this state).
