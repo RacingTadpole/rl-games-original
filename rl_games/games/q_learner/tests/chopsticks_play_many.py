@@ -15,8 +15,8 @@ def chopsticks_play_many(
     >>> from rl_games.q_learner.player import QPlayer
     >>> random.seed(2)
     >>> a, b = QPlayer('A'), QPlayer('B')
-    >>> chopsticks_play_many([a, b])
-    {'B': 0.514, 'A': 0.486}
+    >>> chopsticks_play_many([a, b], range(500))
+    {'B': 0.524, 'A': 0.476}
     """
     game = Chopsticks()
     return play_many(game, players, *args, **kwargs)

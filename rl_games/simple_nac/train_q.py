@@ -27,14 +27,14 @@ class QPlayer(Player):
     >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
     >>> x.explore_chance = 0
     >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
-    (0.93, 0.031)
+    (0.89, 0.054)
 
     Learn as O (second player) against a random opponent.
     >>> x, o = QPlayer(explore_chance=1), QPlayer(explore_chance=0.25)
     >>> a = play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
     >>> o.explore_chance = 0
     >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
-    (0.134, 0.73)
+    (0.332, 0.524)
 
     Learn together.
     >>> x, o = QPlayer(explore_chance=0.25), QPlayer(explore_chance=0.25)
@@ -42,7 +42,7 @@ class QPlayer(Player):
     >>> x.explore_chance = 0
     >>> o.explore_chance = 0
     >>> play_many(x, o, play_once=play_once_q_training, restrict_opening=True)
-    (0.112, 0.057)
+    (0.104, 0.06)
 
     With enough training, the players almost always play to a draw.
     #>>> play_many(x, o, 20000, play_once=play_once_q_training, restrict_opening=True)

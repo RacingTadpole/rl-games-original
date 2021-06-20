@@ -15,8 +15,8 @@ def nac_play_many(
     >>> from rl_games.q_learner.player import QPlayer
     >>> random.seed(2)
     >>> x, o = QPlayer('X'), QPlayer('O')
-    >>> nac_play_many([x, o])
-    {'X': 0.376, 'O': 0.185}
+    >>> nac_play_many([x, o], range(500))
+    {'X': 0.46, 'O': 0.208}
     """
     game = Nac()
     return play_many(game, players, *args, **kwargs)

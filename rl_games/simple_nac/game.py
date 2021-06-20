@@ -209,7 +209,7 @@ def play_once_no_training(
 def play_many(
     player_x: Player,
     player_o: Player,
-    num_rounds: int = 1000,
+    num_rounds: int = 500,
     play_once: Callable = play_once_no_training,
     restrict_opening: bool = False,
 ) -> Tuple[float, float]:
@@ -218,8 +218,8 @@ def play_many(
     These are untrained players.
     >>> random.seed(2)
     >>> x, o = Player(), Player()
-    >>> play_many(x, o)
-    (0.618, 0.264)
+    >>> play_many(x, o, 100)
+    (0.61, 0.29)
     """
     count = {x_marker: 0, o_marker: 0}
     for _ in range(num_rounds):

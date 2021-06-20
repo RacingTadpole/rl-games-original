@@ -26,40 +26,40 @@ class SimplePlayer(Player):
     >>> random.seed(2)
     >>> x, o = SimplePlayer(), SimplePlayer()
     >>> play_many(x, o, play_once=play_once_simple_training)
-    (0.328, 0.269)
+    (0.368, 0.214)
 
     Two experienced players usually come to a draw, with exploration turned off
     >>> x.explore_chance = 0
     >>> o.explore_chance = 0
     >>> play_once_simple_training(x, o, verbose=True)
     (('', '', ''), ('', '', ''), ('', 'X', ''))
-    (('', '', 'O'), ('', '', ''), ('', 'X', ''))
-    (('', '', 'O'), ('', 'X', ''), ('', 'X', ''))
-    (('', 'O', 'O'), ('', 'X', ''), ('', 'X', ''))
-    (('X', 'O', 'O'), ('', 'X', ''), ('', 'X', ''))
-    (('X', 'O', 'O'), ('', 'X', ''), ('', 'X', 'O'))
-    (('X', 'O', 'O'), ('', 'X', 'X'), ('', 'X', 'O'))
-    (('X', 'O', 'O'), ('O', 'X', 'X'), ('', 'X', 'O'))
-    (('X', 'O', 'O'), ('O', 'X', 'X'), ('X', 'X', 'O'))
+    (('', '', ''), ('', '', 'O'), ('', 'X', ''))
+    (('X', '', ''), ('', '', 'O'), ('', 'X', ''))
+    (('X', '', ''), ('', 'O', 'O'), ('', 'X', ''))
+    (('X', '', ''), ('X', 'O', 'O'), ('', 'X', ''))
+    (('X', '', ''), ('X', 'O', 'O'), ('O', 'X', ''))
+    (('X', '', 'X'), ('X', 'O', 'O'), ('O', 'X', ''))
+    (('X', 'O', 'X'), ('X', 'O', 'O'), ('O', 'X', ''))
+    (('X', 'O', 'X'), ('X', 'O', 'O'), ('O', 'X', 'X'))
     ''
     >>> play_many(x, o, play_once=play_once_simple_training)
-    (0.166, 0.09)
+    (0.106, 0.084)
 
     An experienced player against a novice should win
     >>> random.seed(2)
     >>> play_many(x, SimplePlayer(), play_once=play_once_simple_training)
-    (0.288, 0.112)
+    (0.212, 0.04)
     >>> play_many(x, SimplePlayer(), play_once=play_once_simple_training)
-    (0.207, 0.01)
+    (0.248, 0.03)
 
     Similarly for the player playing O, although this takes more training
     >>> random.seed(2)
     >>> o.explore_chance = 0.1
-    >>> play_many(SimplePlayer(explore_chance=0.5), o, play_once=play_once_simple_training)
-    (0.363, 0.43)
+    >>> play_many(SimplePlayer(explore_chance=0.5), o, 1000, play_once=play_once_simple_training)
+    (0.385, 0.485)
     >>> o.explore_chance = 0
-    >>> play_many(SimplePlayer(), o, 100, play_once=play_once_simple_training)
-    (0.17, 0.44)
+    >>> play_many(SimplePlayer(), o, 50, play_once=play_once_simple_training)
+    (0.16, 0.76)
     """
 
     _value: Dict[Board, float] = field(default_factory=dict)

@@ -17,8 +17,8 @@ def get_sample_game_and_trained_players(num_rounds: int = 500, initial_explore_c
     game = Nac()
 
     players = [
-        DqnPlayer[NacState, NacAction]('X', NacDqnSetup(), explore_chance=initial_explore_chance),
-        DqnPlayer[NacState, NacAction]('O', NacDqnSetup(), explore_chance=initial_explore_chance),
+        DqnPlayer[NacState, NacAction](game.markers[0], NacDqnSetup(), explore_chance=initial_explore_chance),
+        DqnPlayer[NacState, NacAction](game.markers[1], NacDqnSetup(), explore_chance=initial_explore_chance),
     ]
 
     play_many(game, players, range_with_timer(num_rounds), reduce_explore_chance=True)
