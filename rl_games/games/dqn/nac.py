@@ -5,7 +5,14 @@ import numpy as np
 from rl_games.games.nac import Nac, NacState, NacAction, empty_square
 from rl_games.dqn.onehot import get_onehot_vector_from_index
 from rl_games.dqn.setup import (
-    DqnSetup, GameAndStateToVector, GameAndStateToActionMask, OutputToActionAndValue, ActionToIndex
+    DqnSetup,
+    GameAndStateToVector,
+    GameAndStateToActionMask,
+    OutputToActionAndValue,
+    ActionToIndex,
+    StateVector,
+    ActionMask,
+    ActionVector,
 )
 
 
@@ -37,7 +44,7 @@ def get_nac_state_index(game: Nac, state: NacState) -> int:
     return board_index + 0 if state.next_player_index == 0 else 3 ** len(one_d)
 
 
-def get_onehot_nac_input(game: Nac, state: NacState) -> np.ndarray:
+def get_onehot_nac_input(game: Nac, state: NacState) -> StateVector:
     """
     >>> game = Nac(size=2)
     >>> board = [[empty_square for _ in range(2)] for _ in range(2)]
@@ -50,10 +57,11 @@ def get_onehot_nac_input(game: Nac, state: NacState) -> np.ndarray:
     (array([[0, 0, 0, 0, 0]]), array([[1, 0, 0, 0, 0]]))
     """
     size = 2 * 3 ** game.size ** 2
-    return get_onehot_vector_from_index(get_nac_state_index(game, state), size)
+    index = get_nac_state_index(game, state)
+    return StateVector(get_onehot_vector_from_index(index, size))
 
 
-def get_nac_action_mask(game: Nac, state: NacState) -> np.ndarray:
+def get_nac_action_mask(game: Nac, state: NacState) -> ActionMask:
     """
     Returns a mask where TRUE means NOT valid, in line with numpy's masked array type,
     https://numpy.org/doc/stable/reference/maskedarray.baseclass.html
@@ -69,13 +77,14 @@ def get_nac_action_mask(game: Nac, state: NacState) -> np.ndarray:
            [False, False, False]])
     """
     size = game.size
-    return np.array([[state.board[r][c] != empty_square for c in range(size)] for r in range(size)])
+    mask = np.array([[state.board[r][c] != empty_square for c in range(size)] for r in range(size)])
+    return ActionMask(mask)
 
 
 def get_nac_action_and_value_from_onehot_output(
     game: Nac,
-    output: np.ndarray,
-    action_mask: np.ndarray,
+    output: ActionVector,
+    action_mask: ActionMask,
 ) -> Tuple[NacAction, float]:
     """
     >>> game = Nac(size = 3)
