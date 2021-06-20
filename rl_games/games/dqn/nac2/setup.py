@@ -36,7 +36,7 @@ def get_nac_input(game: Nac, state: NacState) -> StateVector:
 @dataclass
 class NacDqnSetup(DqnSetup[NacState, NacAction]):
     num_states: int = 9
-    hidden_size: int = 18
+    hidden_size: int = 81
     num_actions: int = 9
     get_input_vector: GameAndStateToVector = get_nac_input
     get_action_mask: GameAndStateToActionMask = get_nac_action_mask
