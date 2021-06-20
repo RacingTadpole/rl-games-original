@@ -36,7 +36,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         """
         A player is initialized with a randomly weighted model, so choose a first action for 5 different players.
         >>> from rl_games.games.nac import Nac, NacState, NacAction
-        >>> from rl_games.games.dqn.nac import NacDqnSetup
+        >>> from rl_games.games.dqn.nac.setup import NacDqnSetup
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
         >>> [DqnPlayer('A', NacDqnSetup(), explore_chance=0).choose_action(game, game.get_init_state()) for _ in range(5)]
@@ -59,7 +59,7 @@ class DqnPlayer(Player, Generic[State, Action]):
     def value(self, game: Game, state: State) -> float:
         """
         >>> from rl_games.games.nac import Nac, NacState, NacAction
-        >>> from rl_games.games.dqn.nac import NacDqnSetup
+        >>> from rl_games.games.dqn.nac.setup import NacDqnSetup
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
         >>> player = DqnPlayer[NacState, NacAction]('A', NacDqnSetup())
@@ -86,7 +86,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         ie. it includes opponent moves.
         We'll imagine the dummy game is a 2-player game.
         >>> from rl_games.games.nac import Nac, NacState, NacAction
-        >>> from rl_games.games.dqn.nac import NacDqnSetup
+        >>> from rl_games.games.dqn.nac.setup import NacDqnSetup
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
         >>> player = DqnPlayer('X', NacDqnSetup())

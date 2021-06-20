@@ -1,1 +1,0 @@
-pylint rl_games && mypy . && pytest
