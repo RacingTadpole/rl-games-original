@@ -1,5 +1,5 @@
 # This experimental version of DQN NAC uses a non-one-hot state encoding.
-# It fails terribly.
+# It competes reasonably well with the one-hot version (note 81 hidden nodes here vs 18).
 #
 # Run with:
 #     python -m rl_games.games.dqn.nac2.play

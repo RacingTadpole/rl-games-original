@@ -52,3 +52,24 @@ if __name__ == '__main__':
     print()
     print_result('DQN v DQN2', play_many(game, [players_dqn[0], players_dqn_2[1]], range(100)))
     print_result('DQN2 v DQN', play_many(game, [players_dqn_2[0], players_dqn[1]], range(100)))
+
+# Eg. with 18 hidden layers in DQN and 81 in DQN2. Changing DQN to 81 hidden layers makes little difference.
+# rand v rand     0.54 0.29
+
+# Q v Q           0.16 0.12
+# rand v Q        0.08 0.84
+
+# Q v DQN         1.00 0.00
+# DQN v Q         0.27 0.37
+
+# DQN v rand      0.88 0.09
+# rand v DQN      0.47 0.44
+
+# Q v DQN2        0.27 0.00
+# DQN2 v Q        0.01 0.97
+
+# DQN2 v rand     0.83 0.12
+# rand v DQN2     0.34 0.56
+
+# DQN v DQN2      0.51 0.29
+# DQN2 v DQN      0.67 0.33
