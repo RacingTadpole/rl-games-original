@@ -40,7 +40,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> random.seed(3); np.random.seed(3)
         >>> game = Nac()
         >>> [DqnPlayer('A', NacDqnSetup(), explore_chance=0).choose_action(game, game.get_init_state()) for _ in range(5)]
-        [(0, 2), (0, 0), (2, 2), (0, 1), (1, 2)]
+        [(1, 2), (1, 0), (2, 0), (0, 2), (2, 2)]
         """
         action_mask = self.dqn.get_action_mask(game, state)
         if np.all(action_mask):
@@ -64,7 +64,7 @@ class DqnPlayer(Player, Generic[State, Action]):
         >>> game = Nac()
         >>> player = DqnPlayer[NacState, NacAction]('A', NacDqnSetup())
         >>> round(player.value(game, game.get_init_state()), 4)
-        0.0189
+        0.0214
         """
         action_mask = self.dqn.get_action_mask(game, state)
         if not np.all(action_mask):
@@ -101,7 +101,7 @@ class DqnPlayer(Player, Generic[State, Action]):
 
         >>> x = player.model.predict(player.dqn.get_input_vector(game, states[4]))
         >>> [round(a, 2) for a in x.flatten().tolist()]
-        [-0.03, 0.01, 0.02, 0.01, -0.0, -0.01, -0.03, -0.03, -0.02]
+        [-0.01, 0.02, -0.01, -0.05, -0.02, 0.02, -0.0, 0.01, 0.01]
 
         >>> player.update_action_value(game, states[0], actions[0], states[2], 0)
         >>> player.update_action_value(game, states[2], actions[2], states[4], 0)
@@ -109,7 +109,7 @@ class DqnPlayer(Player, Generic[State, Action]):
 
         >>> x = player.model.predict(player.dqn.get_input_vector(game, states[4]))
         >>> [round(a, 2) for a in x.flatten().tolist()]
-        [0.09, 0.01, 0.02, 0.01, -0.0, -0.01, -0.03, -0.03, -0.02]
+        [0.11, 0.02, -0.0, -0.05, -0.02, 0.02, -0.0, 0.01, 0.01]
         """
         target = reward + self.discount_factor * np.max(
             self.model.predict(self.dqn.get_input_vector(game, new_state)))

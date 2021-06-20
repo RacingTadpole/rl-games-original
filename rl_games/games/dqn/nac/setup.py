@@ -23,14 +23,16 @@ def get_nac_state_index(game: Nac, state: NacState) -> int:
     where
         m(r, c) = 0 if empty, or 1, 2 for players
         i(r, c) = r * size + c
-    Then, if 'o' is next player, add 3 ^ size^2
+    We can ignore the state's next player, because an individual player
+    is always trained either to be first or second player, and with
+    unchanging marker.
 
     >>> game = Nac()
     >>> board = [[empty_square for _ in range(3)] for _ in range(3)]
     >>> get_nac_state_index(game, NacState(board, next_player_index=0))
     0
     >>> get_nac_state_index(game, NacState(board, next_player_index=1))
-    19683
+    0
     >>> board[0][1] = game.markers[0]
     >>> get_nac_state_index(game, NacState(board, next_player_index=0))
     3
@@ -41,7 +43,7 @@ def get_nac_state_index(game: Nac, state: NacState) -> int:
     m = {empty_square: 0, game.markers[0]: 1, game.markers[1]: 2}
     one_d = [m[marker] for row in state.board for marker in row]
     board_index = sum(v * 3 ** i for i, v in enumerate(one_d))
-    return board_index + 0 if state.next_player_index == 0 else 3 ** len(one_d)
+    return board_index
 
 
 def get_onehot_nac_input(game: Nac, state: NacState) -> StateVector:
@@ -50,13 +52,13 @@ def get_onehot_nac_input(game: Nac, state: NacState) -> StateVector:
     >>> board = [[empty_square for _ in range(2)] for _ in range(2)]
     >>> s = get_onehot_nac_input(game, NacState(board, next_player_index=0))
     >>> s.shape, s[:, :5]
-    ((1, 162), array([[1, 0, 0, 0, 0]]))
+    ((1, 81), array([[1, 0, 0, 0, 0]]))
     >>> board[0][1] = game.markers[0]
     >>> s = get_onehot_nac_input(game, NacState(board, next_player_index=1))
-    >>> s[:, :5], s[:, 81:86]
-    (array([[0, 0, 0, 0, 0]]), array([[1, 0, 0, 0, 0]]))
+    >>> s[:, :5]
+    array([[0, 0, 0, 1, 0]])
     """
-    size = 2 * 3 ** game.size ** 2
+    size = 3 ** game.size ** 2
     index = get_nac_state_index(game, state)
     return StateVector(get_onehot_vector_from_index(index, size))
 
@@ -116,7 +118,7 @@ def get_onehot_index_from_nac_action(game: Nac, action: NacAction) -> int:
 
 @dataclass
 class NacDqnSetup(DqnSetup[NacState, NacAction]):
-    num_states: int = 3 ** 9 * 2
+    num_states: int = 3 ** 9
     hidden_size: int = 18
     num_actions: int = 9
     get_input_vector: GameAndStateToVector = get_onehot_nac_input

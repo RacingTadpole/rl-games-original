@@ -18,7 +18,7 @@ def nac_play_many(
     >>> random.seed(4); np.random.seed(4)
     >>> players = [DqnPlayer[NacState, NacAction]('X', NacDqnSetup()), DqnPlayer[NacState, NacAction]('O', NacDqnSetup())]
     >>> nac_play_many(players, range(5))
-    {'O': 0.4, 'X': 0.2}
+    {'O': 0.8, 'X': 0.2}
     """
     game = Nac()
     return play_many(game, players, *args, **kwargs)

@@ -13,7 +13,7 @@ from rl_games.games.tqdm import range_with_timer
 from .setup import NacDqnSetup
 
 
-def get_sample_game_and_trained_players(num_rounds: int = 500, initial_explore_chance: float = 0.25) -> Tuple[Game, Sequence[Player]]:
+def get_sample_game_and_trained_players(num_rounds: int = 750, initial_explore_chance: float = 0.25) -> Tuple[Game, Sequence[Player]]:
     game = Nac()
 
     players = [
